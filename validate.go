@@ -59,7 +59,7 @@ func (c *Config) Validate() error {
 		errs = multierror.Append(errs, accErrs...)
 	}
 
-	if errs != nil {
+	if errs.ErrorOrNil() != nil {
 		errs.ErrorFormat = func(all []error) string {
 			var errStrs []string
 			for _, e := range all {
