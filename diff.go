@@ -21,12 +21,15 @@ type UpdateUser struct {
 }
 
 type ErrNoInPlaceUpdates struct {
-	Type string
-	ID   string
+	Type  string
+	ID    string
+	Field string
+	Old   string
+	New   string
 }
 
 func (e *ErrNoInPlaceUpdates) Error() string {
-	return fmt.Sprintf("Granted doesn't yet support in-place updates for %s %s", e.Type, e.ID)
+	return fmt.Sprintf("Granted doesn't yet support in-place updates for %s %s (field %s changed from %s to %s)", e.Type, e.ID, e.Field, e.Old, e.New)
 }
 
 func (c *Config) ChangesFrom(old Config) (Changes, error) {
@@ -43,14 +46,17 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 		if old, ok := oldProvidersToDelete[p.ID]; ok {
 			// resource is common between old and new
 
+			if old.Type != p.Type {
+				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID, Field: "type", Old: old.Type, New: p.Type}
+			}
 			if ptrstr(old.BastionAccountID) != ptrstr(p.BastionAccountID) {
-				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID}
+				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID, Field: "BastionAccountID", Old: ptrstr(old.BastionAccountID), New: ptrstr(p.BastionAccountID)}
 			}
 			if ptrstr(old.InstanceARN) != ptrstr(p.InstanceARN) {
-				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID}
+				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID, Field: "InstanceARN", Old: ptrstr(old.InstanceARN), New: ptrstr(p.InstanceARN)}
 			}
 			if ptrstr(old.IdentityStoreID) != ptrstr(p.IdentityStoreID) {
-				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID}
+				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID, Field: "IdentityStoreID", Old: ptrstr(old.IdentityStoreID), New: ptrstr(p.IdentityStoreID)}
 			}
 
 			delete(oldProvidersToDelete, p.ID)

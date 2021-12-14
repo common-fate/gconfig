@@ -61,7 +61,7 @@ func TestValidAccounts(t *testing.T) {
 	str := `providers:
   - id: aws
     type: awsRole
-    bastionAccountId: 12345678912
+    bastionAccountId: 123456789012
 
 accounts:
   - id: dev
@@ -95,7 +95,7 @@ func TestDuplicateAccounts(t *testing.T) {
 	str := `providers:
   - id: aws
     type: awsRole
-    bastionAccountId: 12345678912
+    bastionAccountId: 123456789012
 
 accounts:
   - id: dev

@@ -152,7 +152,7 @@ func TestUpdateProviderDiff(t *testing.T) {
 	}
 
 	_, err := new.ChangesFrom(old)
-	assert.Equal(t, err, &ErrNoInPlaceUpdates{Type: "provider", ID: "first"})
+	assert.Equal(t, &ErrNoInPlaceUpdates{Type: "provider", ID: "first", Field: "type", Old: "first", New: "second"}, err)
 }
 
 func TestUpdateProviderDiffNoError(t *testing.T) {

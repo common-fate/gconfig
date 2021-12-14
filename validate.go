@@ -124,8 +124,8 @@ func checkAccount(a *Account, accountMap map[string]bool, providerMap map[string
 
 	if a.AwsAccountID != nil {
 		err := mustBeAWSAccount(*a.AwsAccountID)
-		err = printLintError(a, err)
 		if err != nil {
+			err = printLintError(a, err)
 			errs = append(errs, err)
 		}
 	}
