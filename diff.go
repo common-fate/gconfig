@@ -2,7 +2,6 @@ package gconfig
 
 import (
 	"fmt"
-	"reflect"
 )
 
 type Changes struct {
@@ -44,7 +43,13 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 		if old, ok := oldProvidersToDelete[p.ID]; ok {
 			// resource is common between old and new
 
-			if !reflect.DeepEqual(old, p) {
+			if ptrstr(old.BastionAccountID) != ptrstr(p.BastionAccountID) {
+				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID}
+			}
+			if ptrstr(old.InstanceARN) != ptrstr(p.InstanceARN) {
+				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID}
+			}
+			if ptrstr(old.IdentityStoreID) != ptrstr(p.IdentityStoreID) {
 				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID}
 			}
 
@@ -122,10 +127,10 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 	return ch, nil
 }
 
-// checkFieldEqual returns an formatted error if a != b
-func checkFieldEqual(resourcetype, id, field, a, b string) error {
-	if a != b {
-		return fmt.Errorf("Tried to change %s %s %s from %s to %s but Granted doesn't yet support in-place updates. Delete the %s and then add a new one.", resourcetype, id, field, a, b, resourcetype)
+// ptrstr converts a string pointer to a string. It returns an empty string "" if the pointer is nil.
+func ptrstr(s *string) string {
+	if s == nil {
+		return ""
 	}
-	return nil
+	return *s
 }

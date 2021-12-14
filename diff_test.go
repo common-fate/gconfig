@@ -154,3 +154,37 @@ func TestUpdateProviderDiff(t *testing.T) {
 	_, err := new.ChangesFrom(old)
 	assert.Equal(t, err, &ErrNoInPlaceUpdates{Type: "provider", ID: "first"})
 }
+
+func TestUpdateProviderDiffNoError(t *testing.T) {
+	accID := "123456"
+	old := Config{
+		Providers: []Provider{
+			{
+				ID:               "first",
+				Type:             "first",
+				BastionAccountID: &accID,
+			},
+		},
+	}
+
+	secondAccID := "123456"
+
+	new := Config{
+		Providers: []Provider{
+			{
+				ID:               "first",
+				Type:             "first",
+				BastionAccountID: &secondAccID,
+			},
+		},
+	}
+
+	res, err := new.ChangesFrom(old)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := Changes{}
+
+	assert.Equal(t, expected, res)
+}
