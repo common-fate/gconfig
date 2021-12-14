@@ -54,8 +54,7 @@ groups:
 	}
 
 	errs := c.Validate()
-	assert.Len(t, errs, 1)
-	assert.Equal(t, "config.yml:12:7: c@test.com must be defined as a user or an admin", errs[0].Error())
+	assert.Equal(t, "config.yml:12:7: c@test.com must be defined as a user or an admin", errs.Error())
 }
 
 func TestValidAccounts(t *testing.T) {
@@ -117,8 +116,7 @@ accounts:
 	}
 
 	errs := c.Validate()
-	assert.Len(t, errs, 1)
-	assert.Equal(t, "config.yml:12:5: duplicate account ID dev", errs[0].Error())
+	assert.Equal(t, "config.yml:12:5: duplicate account ID dev", errs.Error())
 }
 
 // If we construct a Config using Go structs,
@@ -139,6 +137,5 @@ func TestErrorPrintingNoFilename(t *testing.T) {
 	}
 
 	errs := c.Validate()
-	assert.Len(t, errs, 1)
-	assert.Equal(t, "duplicate group ID test", errs[0].Error())
+	assert.Equal(t, "duplicate group ID test", errs.Error())
 }

@@ -1,9 +1,14 @@
 package gconfig
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
 
-func (c *Config) Validate() []error {
-	var errs []error
+	"github.com/hashicorp/go-multierror"
+)
+
+func (c *Config) Validate() error {
+	var errs *multierror.Error
 
 	// group members must be defined in the "admins" or "users"
 	userMap := make(map[string]bool)
@@ -21,7 +26,7 @@ func (c *Config) Validate() []error {
 		if ok {
 			err := fmt.Errorf("duplicate group ID %s", g.ID)
 			err = printLintError(g, err)
-			errs = append(errs, err)
+			errs = multierror.Append(errs, err)
 		}
 
 		for _, m := range g.Members {
@@ -29,7 +34,7 @@ func (c *Config) Validate() []error {
 			if !ok {
 				err := fmt.Errorf("%s must be defined as a user or an admin", m.Email)
 				err = printLintError(m, err)
-				errs = append(errs, err)
+				errs = multierror.Append(errs, err)
 			}
 		}
 		groupMap[g.ID] = true
@@ -42,7 +47,7 @@ func (c *Config) Validate() []error {
 		if ok {
 			err := fmt.Errorf("duplicate provider ID %s", p.ID)
 			err = printLintError(&p, err)
-			errs = append(errs, err)
+			errs = multierror.Append(errs, err)
 		}
 
 		providerMap[p.ID] = true
@@ -51,7 +56,17 @@ func (c *Config) Validate() []error {
 	accountMap := make(map[string]bool)
 	for _, a := range c.Accounts {
 		accErrs := checkAccount(&a, accountMap, providerMap)
-		errs = append(errs, accErrs...)
+		errs = multierror.Append(errs, accErrs...)
+	}
+
+	if errs != nil {
+		errs.ErrorFormat = func(all []error) string {
+			var errStrs []string
+			for _, e := range all {
+				errStrs = append(errStrs, e.Error())
+			}
+			return strings.Join(errStrs, "\n")
+		}
 	}
 
 	return errs
