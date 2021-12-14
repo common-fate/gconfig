@@ -7,6 +7,14 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
+type ErrInvalidAWSAccount struct {
+	Account string
+}
+
+func (e *ErrInvalidAWSAccount) Error() string {
+	return fmt.Sprintf("account %s is not a valid AWS account: must be 12 characters long", e.Account)
+}
+
 func (c *Config) Validate() error {
 	var errs *multierror.Error
 
@@ -48,6 +56,14 @@ func (c *Config) Validate() error {
 			err := fmt.Errorf("duplicate provider ID %s", p.ID)
 			err = printLintError(&p, err)
 			errs = multierror.Append(errs, err)
+		}
+
+		if p.BastionAccountID != nil {
+			err := mustBeAWSAccount(*p.BastionAccountID)
+			if err != nil {
+				err = printLintError(p, err)
+				errs = multierror.Append(errs, err)
+			}
 		}
 
 		providerMap[p.ID] = true
@@ -106,6 +122,14 @@ func checkAccount(a *Account, accountMap map[string]bool, providerMap map[string
 		}
 	}
 
+	if a.AwsAccountID != nil {
+		err := mustBeAWSAccount(*a.AwsAccountID)
+		err = printLintError(a, err)
+		if err != nil {
+			errs = append(errs, err)
+		}
+	}
+
 	for _, c := range a.Children {
 		childErrs := checkAccount(&c, accountMap, providerMap)
 		errs = append(errs, childErrs...)
@@ -127,4 +151,11 @@ func printLintError(p filePositioner, err error) error {
 		return err
 	}
 	return fmt.Errorf("%s:%d:%d: %s", pos.Filename, pos.Line, pos.Col, err)
+}
+
+func mustBeAWSAccount(acc string) error {
+	if len(acc) != 12 {
+		return &ErrInvalidAWSAccount{Account: acc}
+	}
+	return nil
 }

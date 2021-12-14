@@ -139,3 +139,19 @@ func TestErrorPrintingNoFilename(t *testing.T) {
 	errs := c.Validate()
 	assert.Equal(t, "duplicate group ID test", errs.Error())
 }
+
+func TestInvalidAWSAccount(t *testing.T) {
+	str := `providers:
+  - id: aws
+    type: awsRole
+    bastionAccountId: 123123
+`
+
+	c, err := parseContents("config.yml", []byte(str))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	errs := c.Validate()
+	assert.Equal(t, "config.yml:2:5: account 123123 is not a valid AWS account: must be 12 characters long", errs.Error())
+}
