@@ -4,16 +4,16 @@ import (
 	"testing"
 	"time"
 
-	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/proto/go/gconfig/v1alpha1"
+	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
 
-func TestSerialize(t *testing.T) {
-	provider := "provider"
-	accID := "123456789012"
-	cfg := Config{
-		Type: "v1alpha1",
+var (
+	provider = "provider"
+	accID    = "123456789012"
+	cfg      = Config{
+		Type: "granted/v1alpha1",
 		Admins: []Member{
 			{
 				Email: "admin@example.com",
@@ -56,12 +56,12 @@ func TestSerialize(t *testing.T) {
 				},
 			},
 		},
-		Roles: []Roles{
+		Roles: []Role{
 			{
 				ID:       "role",
 				Accounts: []string{"acc"},
 				Policy:   "policy",
-				Rules: []Rules{
+				Rules: []Rule{
 					{
 						Policy:          "allow",
 						Group:           "test",
@@ -70,7 +70,7 @@ func TestSerialize(t *testing.T) {
 				},
 			},
 		},
-		Tests: []Tests{
+		Tests: []Test{
 			{
 				Name: "test",
 				Given: Given{
@@ -84,9 +84,8 @@ func TestSerialize(t *testing.T) {
 			},
 		},
 	}
-	out := cfg.SerializeProtobuf()
 
-	expected := &gconfigv1alpha1.Config{
+	expected = &gconfigv1alpha1.Config{
 		Admins: []*gconfigv1alpha1.Member{
 			{
 				Email: "admin@example.com",
@@ -157,5 +156,14 @@ func TestSerialize(t *testing.T) {
 			},
 		},
 	}
+)
+
+func TestSerialize(t *testing.T) {
+	out := cfg.SerializeProtobuf()
 	assert.Equal(t, expected, out)
+}
+
+func TestDeserialize(t *testing.T) {
+	reversed := FromProtobuf(expected)
+	assert.Equal(t, cfg, reversed)
 }

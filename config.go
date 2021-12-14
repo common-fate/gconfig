@@ -14,8 +14,8 @@ type Config struct {
 	Groups    []Group    `yaml:"groups"`
 	Providers []Provider `yaml:"providers"`
 	Accounts  []Account  `yaml:"accounts"`
-	Roles     []Roles    `yaml:"roles"`
-	Tests     []Tests    `yaml:"tests"`
+	Roles     []Role     `yaml:"roles"`
+	Tests     []Test     `yaml:"tests"`
 }
 
 type Group struct {
@@ -186,22 +186,22 @@ func (a *Account) filePosition() *FilePosition {
 	return a.pos
 }
 
-type Rules struct {
+type Rule struct {
 	Policy          string        `yaml:"policy"`
 	Group           string        `yaml:"group"`
 	SessionDuration time.Duration `yaml:"sessionDuration"`
 }
 
-type Roles struct {
+type Role struct {
 	ID       string   `yaml:"id"`
 	Accounts []string `yaml:"accounts"`
 	Policy   string   `yaml:"policy"`
-	Rules    []Rules  `yaml:"rules"`
+	Rules    []Rule   `yaml:"rules"`
 }
 
-// Tests is the container for all Granted configuration tests
+// Test is the container for all Granted configuration tests
 // expressed as part of a Granted config.
-type Tests struct {
+type Test struct {
 	Name  string `yaml:"name"`
 	Given Given  `yaml:"given,omitempty"`
 	Then  Then   `yaml:"then,omitempty"`
