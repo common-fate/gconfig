@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	configv1alpha1 "github.com/common-fate/gconfig/gen/proto/go/config/v1alpha1"
+	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/proto/go/gconfig/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/durationpb"
 )
@@ -86,41 +86,41 @@ func TestSerialize(t *testing.T) {
 	}
 	out := cfg.SerializeProtobuf()
 
-	expected := &configv1alpha1.Config{
-		Admins: []*configv1alpha1.Member{
+	expected := &gconfigv1alpha1.Config{
+		Admins: []*gconfigv1alpha1.Member{
 			{
 				Email: "admin@example.com",
 			},
 		},
-		Users: []*configv1alpha1.Member{
+		Users: []*gconfigv1alpha1.Member{
 			{
 				Email: "user@example.com",
 			},
 		},
-		Groups: []*configv1alpha1.Group{
+		Groups: []*gconfigv1alpha1.Group{
 			{
 				Name: "group",
 				Id:   "group",
-				Members: []*configv1alpha1.Member{
+				Members: []*gconfigv1alpha1.Member{
 					{
 						Email: "user@example.com",
 					},
 				},
 			},
 		},
-		Providers: []*configv1alpha1.Provider{
+		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id:               "provider",
 				Type:             "awsRole",
 				BastionAccountId: accID,
 			},
 		},
-		Accounts: []*configv1alpha1.Account{
+		Accounts: []*gconfigv1alpha1.Account{
 			{
 				Id:       "accgroup",
 				Name:     "account group",
 				Provider: "provider",
-				Children: []*configv1alpha1.Account{
+				Children: []*gconfigv1alpha1.Account{
 					{
 						Id:           "acc",
 						Name:         "account",
@@ -129,12 +129,12 @@ func TestSerialize(t *testing.T) {
 				},
 			},
 		},
-		Roles: []*configv1alpha1.Role{
+		Roles: []*gconfigv1alpha1.Role{
 			{
 				Id:       "role",
 				Accounts: []string{"acc"},
 				Policy:   "policy",
-				Rules: []*configv1alpha1.Rule{
+				Rules: []*gconfigv1alpha1.Rule{
 					{
 						Policy:          "allow",
 						Group:           "test",
@@ -143,15 +143,15 @@ func TestSerialize(t *testing.T) {
 				},
 			},
 		},
-		Tests: []*configv1alpha1.Test{
+		Tests: []*gconfigv1alpha1.Test{
 			{
 				Name: "test",
-				Given: &configv1alpha1.Given{
+				Given: &gconfigv1alpha1.Given{
 					User:    "test@example.com",
 					Account: "acc",
 					Role:    "role",
 				},
-				Then: &configv1alpha1.Then{
+				Then: &gconfigv1alpha1.Then{
 					Outcome: "allow",
 				},
 			},

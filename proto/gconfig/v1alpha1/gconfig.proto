@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package config.v1alpha1;
+package gconfig.v1alpha1;
 import "google/protobuf/duration.proto";
 
 message Config {
