@@ -1,9 +1,9 @@
 package gconfig
 
-type ConfigStatus int
+type Status int
 
-//go:generate go run github.com/alvaroloes/enumer -type=ConfigStatus -linecomment
+//go:generate go run github.com/alvaroloes/enumer -type=Status -linecomment
 const (
-	ConfigStatusPending  ConfigStatus = iota + 1 // PENDING
-	ConfigStatusApproved                         // APPROVED
+	StatusPending  Status = iota + 1 // PENDING
+	StatusApproved                   // APPROVED
 )
