@@ -67,9 +67,10 @@ func (c *Config) Validate() error {
 			}
 			return strings.Join(errStrs, "\n")
 		}
+		return errs
+	} else {
+		return nil
 	}
-
-	return errs
 }
 
 func checkAccount(a *Account, accountMap map[string]bool, providerMap map[string]bool) []error {
