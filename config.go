@@ -1,6 +1,8 @@
 package gconfig
 
 import (
+	"time"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -185,9 +187,9 @@ func (a *Account) filePosition() *FilePosition {
 }
 
 type Rules struct {
-	Policy          string `yaml:"policy"`
-	Group           string `yaml:"group"`
-	SessionDuration string `yaml:"sessionDuration"`
+	Policy          string        `yaml:"policy"`
+	Group           string        `yaml:"group"`
+	SessionDuration time.Duration `yaml:"sessionDuration"`
 }
 
 type Roles struct {

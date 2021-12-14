@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package config.v1alpha1;
+import "google/protobuf/duration.proto";
+
+message Config {
+  repeated Member admins = 1;
+  repeated Member users = 2;
+  repeated Group groups = 3;
+  repeated Provider providers = 4;
+  repeated Account accounts = 5;
+  repeated Role roles = 6;
+  repeated Test tests = 7;
+}
+
+message Member {
+  string email = 1;
+}
+
+message Group {
+  string name = 1;
+  string id = 2;
+  repeated Member members = 3;
+}
+
+message Provider {
+  string id = 1;
+  string type = 2;
+  string bastion_account_id = 3;
+  string instance_arn = 4;
+  string identity_store_id = 5;
+}
+
+message Account {
+  string id = 1;
+  string name = 2;
+  string provider = 3;
+  repeated Account children = 4;
+
+  string aws_account_id = 5;
+}
+
+message Role {
+  string id = 1;
+  repeated string accounts = 2;
+  string policy = 3;
+  repeated Rule rules = 4;
+}
+
+message Rule {
+  string policy = 1;
+  string group = 2;
+  google.protobuf.Duration session_duration = 3;
+}
+
+message Test {
+  string name = 1; 
+  Given given = 2;
+  Then then = 3;
+}
+
+message Given {
+  string user = 1;
+  string group = 2;
+  string account = 3;
+  string role = 4;
+}
+
+message Then {
+  string outcome = 1;
+  optional bool audited = 2;
+}
