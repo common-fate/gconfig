@@ -14,6 +14,17 @@ type Changes struct {
 	AddAdmins       []string
 }
 
+// Empty returns true if no changes need to be made
+func (c Changes) Empty() bool {
+	return (len(c.DeleteProviders) == 0 &&
+		len(c.AddProviders) == 0 &&
+		len(c.DeleteUsers) == 0 &&
+		len(c.AddUsers) == 0 &&
+		len(c.UpdateUsers) == 0 &&
+		len(c.DeleteAdmins) == 0 &&
+		len(c.AddAdmins) == 0)
+}
+
 type UpdateUser struct {
 	Email string
 	// whether to make the user an admin or not

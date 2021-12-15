@@ -188,3 +188,8 @@ func TestUpdateProviderDiffNoError(t *testing.T) {
 
 	assert.Equal(t, expected, res)
 }
+
+func TestEmpty(t *testing.T) {
+	c := Changes{}
+	assert.Equal(t, true, c.Empty())
+}
