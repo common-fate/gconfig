@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
 	"github.com/hashicorp/go-multierror"
 )
 
@@ -15,8 +16,22 @@ func (e *ErrInvalidAWSAccount) Error() string {
 	return fmt.Sprintf("account %s is not a valid AWS account: must be 12 characters long", e.Account)
 }
 
-func (c *Config) Validate() error {
+func (c *Config) Validate(providers *gconfigv1alpha1.Providers) error {
 	var errs *multierror.Error
+
+	providerMap := make(map[string]*gconfigv1alpha1.Provider)
+	accountMap := make(map[string]*gconfigv1alpha1.Account)
+	for _, p := range providers.Providers {
+		if _, ok := providerMap[p.Id]; ok {
+			// this should never happen as we have server-side validation to avoid duplicate provider IDs.
+			return fmt.Errorf("duplicate provider %s", p.Id)
+		}
+		providerMap[p.Id] = p
+
+		for _, acc := range p.Accounts {
+			collectAccount(acc, accountMap)
+		}
+	}
 
 	// group members must be defined in the "admins" or "users"
 	userMap := make(map[string]bool)
@@ -48,31 +63,15 @@ func (c *Config) Validate() error {
 		groupMap[g.ID] = true
 	}
 
-	// provider IDs must match
-	providerMap := make(map[string]bool)
-	for _, p := range c.Providers {
-		_, ok := providerMap[p.ID]
-		if ok {
-			err := fmt.Errorf("duplicate provider ID %s", p.ID)
-			err = printLintError(&p, err)
-			errs = multierror.Append(errs, err)
-		}
-
-		if p.BastionAccountID != nil {
-			err := mustBeAWSAccount(*p.BastionAccountID)
-			if err != nil {
-				err = printLintError(p, err)
+	// all roles must reference accounts that we have references to in the providers
+	for _, r := range c.Roles {
+		for _, acc := range r.Accounts {
+			if _, ok := accountMap[acc]; !ok {
+				err := fmt.Errorf("role %s references an account that doesn't exist: %s", r.ID, acc)
+				err = printLintError(r, err)
 				errs = multierror.Append(errs, err)
 			}
 		}
-
-		providerMap[p.ID] = true
-	}
-
-	accountMap := make(map[string]bool)
-	for _, a := range c.Accounts {
-		accErrs := checkAccount(&a, accountMap, providerMap)
-		errs = multierror.Append(errs, accErrs...)
 	}
 
 	if errs.ErrorOrNil() != nil {
@@ -89,53 +88,11 @@ func (c *Config) Validate() error {
 	}
 }
 
-func checkAccount(a *Account, accountMap map[string]bool, providerMap map[string]bool) []error {
-	var errs []error
-
-	_, ok := accountMap[a.ID]
-	if ok {
-		err := fmt.Errorf("duplicate account ID %s", a.ID)
-		err = printLintError(a, err)
-		errs = append(errs, err)
+func collectAccount(a *gconfigv1alpha1.Account, accountMap map[string]*gconfigv1alpha1.Account) {
+	accountMap[a.Id] = a
+	for _, child := range a.Children {
+		collectAccount(child, accountMap)
 	}
-
-	accountMap[a.ID] = true
-
-	if a.parentId != nil && a.Provider != nil {
-		err := fmt.Errorf("if accounts are grouped together only the top-level group may specify the provider, account %s is in a group but has a provider %s", a.ID, *a.Provider)
-		err = printLintError(a, err)
-		errs = append(errs, err)
-	}
-
-	if a.parentId == nil {
-		if a.Provider == nil {
-			err := fmt.Errorf("account %s must specify a provider", a.ID)
-			err = printLintError(a, err)
-			errs = append(errs, err)
-		} else {
-			_, ok := providerMap[*a.Provider]
-			if !ok {
-				err := fmt.Errorf("provider %s for account %s doesn't match any providers in your config", *a.Provider, a.ID)
-				err = printLintError(a, err)
-				errs = append(errs, err)
-			}
-		}
-	}
-
-	if a.AwsAccountID != nil {
-		err := mustBeAWSAccount(*a.AwsAccountID)
-		if err != nil {
-			err = printLintError(a, err)
-			errs = append(errs, err)
-		}
-	}
-
-	for _, c := range a.Children {
-		childErrs := checkAccount(&c, accountMap, providerMap)
-		errs = append(errs, childErrs...)
-	}
-
-	return errs
 }
 
 // filePositioners can get their positions in a YAML file.
@@ -151,11 +108,4 @@ func printLintError(p filePositioner, err error) error {
 		return err
 	}
 	return fmt.Errorf("%s:%d:%d: %s", pos.Filename, pos.Line, pos.Col, err)
-}
-
-func mustBeAWSAccount(acc string) error {
-	if len(acc) != 12 {
-		return &ErrInvalidAWSAccount{Account: acc}
-	}
-	return nil
 }

@@ -30,26 +30,6 @@ func (c *Config) SerializeProtobuf() *gconfigv1alpha1.Config {
 		}
 		out.Groups = append(out.Groups, group)
 	}
-	for _, p := range c.Providers {
-		provider := &gconfigv1alpha1.Provider{
-			Id:   p.ID,
-			Type: p.Type,
-		}
-		if p.BastionAccountID != nil {
-			provider.BastionAccountId = *p.BastionAccountID
-		}
-		if p.InstanceARN != nil {
-			provider.InstanceArn = *p.InstanceARN
-		}
-		if p.IdentityStoreID != nil {
-			provider.IdentityStoreId = *p.IdentityStoreID
-		}
-
-		out.Providers = append(out.Providers, provider)
-	}
-	for _, a := range c.Accounts {
-		out.Accounts = append(out.Accounts, a.SerializeProtobuf())
-	}
 	for _, r := range c.Roles {
 		role := &gconfigv1alpha1.Role{
 			Id:     r.ID,
@@ -84,25 +64,6 @@ func (c *Config) SerializeProtobuf() *gconfigv1alpha1.Config {
 	return out
 }
 
-func (a Account) SerializeProtobuf() *gconfigv1alpha1.Account {
-	out := &gconfigv1alpha1.Account{
-		Id:   a.ID,
-		Name: a.Name,
-	}
-	if a.Provider != nil {
-		out.Provider = *a.Provider
-	}
-	if a.AwsAccountID != nil {
-		out.AwsAccountId = *a.AwsAccountID
-	}
-	for _, child := range a.Children {
-		childOut := child.SerializeProtobuf()
-		out.Children = append(out.Children, childOut)
-	}
-
-	return out
-}
-
 func FromProtobuf(c *gconfigv1alpha1.Config) Config {
 	out := Config{
 		Type: "granted/v1alpha1",
@@ -129,26 +90,6 @@ func FromProtobuf(c *gconfigv1alpha1.Config) Config {
 			})
 		}
 		out.Groups = append(out.Groups, group)
-	}
-	for _, p := range c.Providers {
-		provider := Provider{
-			ID:   p.Id,
-			Type: p.Type,
-		}
-		if p.BastionAccountId != "" {
-			provider.BastionAccountID = &p.BastionAccountId
-		}
-		if p.InstanceArn != "" {
-			provider.InstanceARN = &p.InstanceArn
-		}
-		if p.IdentityStoreId != "" {
-			provider.IdentityStoreID = &p.IdentityStoreId
-		}
-
-		out.Providers = append(out.Providers, provider)
-	}
-	for _, a := range c.Accounts {
-		out.Accounts = append(out.Accounts, AccountFromProtobuf(a))
 	}
 	for _, r := range c.Roles {
 		role := Role{
@@ -179,26 +120,6 @@ func FromProtobuf(c *gconfigv1alpha1.Config) Config {
 				Audited: t.Then.Audited,
 			},
 		})
-	}
-
-	return out
-}
-
-func AccountFromProtobuf(a *gconfigv1alpha1.Account) Account {
-	out := Account{
-		ID:   a.Id,
-		Name: a.Name,
-	}
-	if a.Provider != "" {
-		out.Provider = &a.Provider
-	}
-	if a.AwsAccountId != "" {
-		out.AwsAccountID = &a.AwsAccountId
-	}
-
-	for _, child := range a.Children {
-		childOut := AccountFromProtobuf(child)
-		out.Children = append(out.Children, childOut)
 	}
 
 	return out

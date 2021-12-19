@@ -7,8 +7,6 @@ message Config {
   repeated Member admins = 1;
   repeated Member users = 2;
   repeated Group groups = 3;
-  repeated Provider providers = 4;
-  repeated Account accounts = 5;
   repeated Role roles = 6;
   repeated Test tests = 7;
 }
@@ -23,21 +21,38 @@ message Group {
   repeated Member members = 3;
 }
 
+message Providers {
+  repeated Provider providers = 1;
+}
+
 message Provider {
   string id = 1;
-  string type = 2;
-  string bastion_account_id = 3;
-  string instance_arn = 4;
-  string identity_store_id = 5;
+  string name = 2;
+  repeated Account accounts = 3;
+  repeated AccessHandler access_handlers = 4;
+  oneof details {
+    AWSProviderDetails aws = 5;
+  }
+}
+
+message AWSProviderDetails {
+  string org_management_account_id = 1;
+}
+
+message AccessHandler {
+  string url = 1;
 }
 
 message Account {
-  string id = 1;
-  string name = 2;
-  string provider = 3;
-  repeated Account children = 4;
-
-  string aws_account_id = 5;
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+    TYPE_AWS_ACCOUNT = 1;
+  }
+  Type type = 1;
+  string id = 2;
+  string name = 3;
+  repeated string aliases = 4;
+  repeated Account children = 5;
 }
 
 message Role {

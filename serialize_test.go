@@ -10,9 +10,7 @@ import (
 )
 
 var (
-	provider = "provider"
-	accID    = "123456789012"
-	cfg      = Config{
+	cfg = Config{
 		Type: "granted/v1alpha1",
 		Admins: []Member{
 			{
@@ -31,27 +29,6 @@ var (
 				Members: []Member{
 					{
 						Email: "user@example.com",
-					},
-				},
-			},
-		},
-		Providers: []Provider{
-			{
-				ID:               provider,
-				Type:             "awsRole",
-				BastionAccountID: &accID,
-			},
-		},
-		Accounts: []Account{
-			{
-				ID:       "accgroup",
-				Name:     "account group",
-				Provider: &provider,
-				Children: []Account{
-					{
-						ID:           "acc",
-						Name:         "account",
-						AwsAccountID: &accID,
 					},
 				},
 			},
@@ -103,27 +80,6 @@ var (
 				Members: []*gconfigv1alpha1.Member{
 					{
 						Email: "user@example.com",
-					},
-				},
-			},
-		},
-		Providers: []*gconfigv1alpha1.Provider{
-			{
-				Id:               "provider",
-				Type:             "awsRole",
-				BastionAccountId: accID,
-			},
-		},
-		Accounts: []*gconfigv1alpha1.Account{
-			{
-				Id:       "accgroup",
-				Name:     "account group",
-				Provider: "provider",
-				Children: []*gconfigv1alpha1.Account{
-					{
-						Id:           "acc",
-						Name:         "account",
-						AwsAccountId: accID,
 					},
 				},
 			},

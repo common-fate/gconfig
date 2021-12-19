@@ -3,6 +3,7 @@ package gconfig
 import (
 	"testing"
 
+	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )
@@ -28,7 +29,7 @@ groups:
 		t.Fatal(err)
 	}
 
-	errs := c.Validate()
+	errs := c.Validate(&gconfigv1alpha1.Providers{})
 	assert.Nil(t, errs)
 }
 
@@ -53,70 +54,8 @@ groups:
 		t.Fatal(err)
 	}
 
-	errs := c.Validate()
+	errs := c.Validate(&gconfigv1alpha1.Providers{})
 	assert.Equal(t, "config.yml:12:7: c@test.com must be defined as a user or an admin", errs.Error())
-}
-
-func TestValidAccounts(t *testing.T) {
-	str := `providers:
-  - id: aws
-    type: awsRole
-    bastionAccountId: 123456789012
-
-accounts:
-  - id: dev
-    name: Development
-    provider: aws
-    awsAccountId: 123456789012
-
-  - id: prod-group
-    name: AWS Production
-    provider: aws
-    accounts:
-      - id: prod-service-a
-        name: Service A (production)
-        awsAccountId: 123456789012
-      - id: prod-service-b
-        name: Service B (production)
-        awsAccountId: 123456789012
-`
-
-	var c Config
-	err := yaml.Unmarshal([]byte(str), &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	errs := c.Validate()
-	assert.Nil(t, errs)
-}
-
-func TestDuplicateAccounts(t *testing.T) {
-	str := `providers:
-  - id: aws
-    type: awsRole
-    bastionAccountId: 123456789012
-
-accounts:
-  - id: dev
-    name: Development
-    provider: aws
-    awsAccountId: 123456789012
-
-  - id: dev
-    name: Development
-    provider: aws
-    awsAccountId: 123456789012
-
-`
-
-	c, err := parseContents("config.yml", []byte(str))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	errs := c.Validate()
-	assert.Equal(t, "config.yml:12:5: duplicate account ID dev", errs.Error())
 }
 
 // If we construct a Config using Go structs,
@@ -136,15 +75,16 @@ func TestErrorPrintingNoFilename(t *testing.T) {
 		},
 	}
 
-	errs := c.Validate()
+	errs := c.Validate(&gconfigv1alpha1.Providers{})
 	assert.Equal(t, "duplicate group ID test", errs.Error())
 }
 
-func TestInvalidAWSAccount(t *testing.T) {
-	str := `providers:
-  - id: aws
-    type: awsRole
-    bastionAccountId: 123123
+func TestValidAccounts(t *testing.T) {
+	str := `roles:
+  - id: test
+    accounts: 
+      - "123456789012"
+    policy: TEST_POLICY
 `
 
 	c, err := parseContents("config.yml", []byte(str))
@@ -152,6 +92,48 @@ func TestInvalidAWSAccount(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	errs := c.Validate()
-	assert.Equal(t, "config.yml:2:5: account 123123 is not a valid AWS account: must be 12 characters long", errs.Error())
+	err = c.Validate(&gconfigv1alpha1.Providers{
+		Providers: []*gconfigv1alpha1.Provider{
+			{
+				Id: "aws",
+				Accounts: []*gconfigv1alpha1.Account{
+					{
+						Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
+						Id:   "123456789012",
+					},
+				},
+			},
+		},
+	})
+	assert.NoError(t, err)
+}
+
+// the role "test" points to an account which hasn't been defined in any provider.
+func TestInvalidAccounts(t *testing.T) {
+	str := `roles:
+  - id: test
+    accounts: 
+      - "123456789012"
+    policy: TEST_POLICY
+`
+
+	c, err := parseContents("config.yml", []byte(str))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = c.Validate(&gconfigv1alpha1.Providers{
+		Providers: []*gconfigv1alpha1.Provider{
+			{
+				Id: "aws",
+				Accounts: []*gconfigv1alpha1.Account{
+					{
+						Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
+						Id:   "234567890123",
+					},
+				},
+			},
+		},
+	})
+	assert.Equal(t, "config.yml:2:5: role test references an account that doesn't exist: 123456789012", err.Error())
 }

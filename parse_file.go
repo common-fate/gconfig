@@ -41,20 +41,9 @@ func parseContents(filename string, in []byte) (*Config, error) {
 		}
 	}
 
-	for _, p := range c.Providers {
-		p.pos.Filename = filename
-	}
-
-	for _, a := range c.Accounts {
-		setAccountFilename(a, filename)
+	for _, r := range c.Roles {
+		r.pos.Filename = filename
 	}
 
 	return &c, nil
-}
-
-func setAccountFilename(a Account, filename string) {
-	a.pos.Filename = filename
-	for _, c := range a.Children {
-		setAccountFilename(c, filename)
-	}
 }

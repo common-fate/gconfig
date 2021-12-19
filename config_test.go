@@ -8,36 +8,17 @@ import (
 )
 
 func Test_LineNumberParsed(t *testing.T) {
-	str := `id: dev
-name: Development
-provider: aws
-awsAccountId: 123456789012
+	str := `admins:
+  - user@test.com
 `
 
-	var a Account
+	var c Config
 
-	err := yaml.Unmarshal([]byte(str), &a)
+	err := yaml.Unmarshal([]byte(str), &c)
 	if err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, 1, a.pos.Line)
-}
 
-func Test_ChildAccountsParsed(t *testing.T) {
-	str := `id: dev
-name: Group
-provider: aws
-accounts:
-  - id: one
-    name: Development
-    awsAccountId: 123456789012
-`
-
-	var a Account
-
-	err := yaml.Unmarshal([]byte(str), &a)
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, "one", a.Children[0].ID)
+	assert.NotNil(t, c.Admins)
+	assert.Equal(t, 2, c.Admins[0].pos.Line)
 }

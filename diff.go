@@ -5,20 +5,16 @@ import (
 )
 
 type Changes struct {
-	DeleteProviders []string
-	AddProviders    []Provider
-	DeleteUsers     []string
-	AddUsers        []string
-	UpdateUsers     []UpdateUser
-	DeleteAdmins    []string
-	AddAdmins       []string
+	DeleteUsers  []string
+	AddUsers     []string
+	UpdateUsers  []UpdateUser
+	DeleteAdmins []string
+	AddAdmins    []string
 }
 
 // Empty returns true if no changes need to be made
 func (c Changes) Empty() bool {
-	return (len(c.DeleteProviders) == 0 &&
-		len(c.AddProviders) == 0 &&
-		len(c.DeleteUsers) == 0 &&
+	return (len(c.DeleteUsers) == 0 &&
 		len(c.AddUsers) == 0 &&
 		len(c.UpdateUsers) == 0 &&
 		len(c.DeleteAdmins) == 0 &&
@@ -45,42 +41,6 @@ func (e *ErrNoInPlaceUpdates) Error() string {
 
 func (c *Config) ChangesFrom(old Config) (Changes, error) {
 	var ch Changes
-
-	oldProvidersToDelete := make(map[string]Provider)
-	newProvidersToAdd := make(map[string]Provider)
-
-	for _, p := range old.Providers {
-		oldProvidersToDelete[p.ID] = p
-	}
-
-	for _, p := range c.Providers {
-		if old, ok := oldProvidersToDelete[p.ID]; ok {
-			// resource is common between old and new
-
-			if old.Type != p.Type {
-				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID, Field: "type", Old: old.Type, New: p.Type}
-			}
-			if ptrstr(old.BastionAccountID) != ptrstr(p.BastionAccountID) {
-				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID, Field: "BastionAccountID", Old: ptrstr(old.BastionAccountID), New: ptrstr(p.BastionAccountID)}
-			}
-			if ptrstr(old.InstanceARN) != ptrstr(p.InstanceARN) {
-				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID, Field: "InstanceARN", Old: ptrstr(old.InstanceARN), New: ptrstr(p.InstanceARN)}
-			}
-			if ptrstr(old.IdentityStoreID) != ptrstr(p.IdentityStoreID) {
-				return Changes{}, &ErrNoInPlaceUpdates{Type: "provider", ID: p.ID, Field: "IdentityStoreID", Old: ptrstr(old.IdentityStoreID), New: ptrstr(p.IdentityStoreID)}
-			}
-
-			delete(oldProvidersToDelete, p.ID)
-		} else {
-			// resource is new
-			newProvidersToAdd[p.ID] = p
-			ch.AddProviders = append(ch.AddProviders, p)
-		}
-	}
-
-	for id := range oldProvidersToDelete {
-		ch.DeleteProviders = append(ch.DeleteProviders, id)
-	}
 
 	// user diffing
 	// the full pool of users is both admins and users.
@@ -142,12 +102,4 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 	}
 
 	return ch, nil
-}
-
-// ptrstr converts a string pointer to a string. It returns an empty string "" if the pointer is nil.
-func ptrstr(s *string) string {
-	if s == nil {
-		return ""
-	}
-	return *s
 }
