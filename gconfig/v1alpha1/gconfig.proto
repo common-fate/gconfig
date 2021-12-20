@@ -57,9 +57,16 @@ message Account {
 
 message Role {
   string id = 1;
-  repeated string accounts = 2;
+  repeated RoleAccount accounts = 2;
   string policy = 3;
   repeated Rule rules = 4;
+}
+
+// RoleAccount is a binding of a role to an Account
+// in a particular provider
+message RoleAccount {
+  string provider_id = 1;
+  string account_id = 2;
 }
 
 message Rule {

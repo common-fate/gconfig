@@ -35,7 +35,12 @@ func (c *Config) SerializeProtobuf() *gconfigv1alpha1.Config {
 			Id:     r.ID,
 			Policy: r.Policy,
 		}
-		role.Accounts = append(role.Accounts, r.Accounts...)
+		for _, ra := range r.roleAccounts {
+			role.Accounts = append(role.Accounts, &gconfigv1alpha1.RoleAccount{
+				ProviderId: ra.ProviderID,
+				AccountId:  ra.AccountID,
+			})
+		}
 		for _, rule := range r.Rules {
 			role.Rules = append(role.Rules, &gconfigv1alpha1.Rule{
 				Policy:          rule.Policy,
@@ -64,9 +69,10 @@ func (c *Config) SerializeProtobuf() *gconfigv1alpha1.Config {
 	return out
 }
 
-func FromProtobuf(c *gconfigv1alpha1.Config) Config {
+func FromProtobuf(c *gconfigv1alpha1.Config, providers *gconfigv1alpha1.Providers) Config {
 	out := Config{
-		Type: "granted/v1alpha1",
+		Type:      "granted/v1alpha1",
+		providers: providers,
 	}
 
 	for _, u := range c.Admins {
@@ -96,7 +102,13 @@ func FromProtobuf(c *gconfigv1alpha1.Config) Config {
 			ID:     r.Id,
 			Policy: r.Policy,
 		}
-		role.Accounts = append(role.Accounts, r.Accounts...)
+		for _, ra := range r.Accounts {
+			role.roleAccounts = append(role.roleAccounts, RoleAccount{
+				ProviderID: ra.ProviderId,
+				AccountID:  ra.AccountId,
+			})
+			role.Accounts = append(role.Accounts, ra.AccountId)
+		}
 		for _, rule := range r.Rules {
 			role.Rules = append(role.Rules, Rule{
 				Policy:          rule.Policy,
@@ -104,7 +116,7 @@ func FromProtobuf(c *gconfigv1alpha1.Config) Config {
 				SessionDuration: rule.SessionDuration.AsDuration(),
 			})
 		}
-		out.Roles = append(out.Roles, role)
+		out.Roles = append(out.Roles, &role)
 	}
 	for _, t := range c.Tests {
 		out.Tests = append(out.Tests, Test{

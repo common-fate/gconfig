@@ -29,7 +29,7 @@ groups:
 		t.Fatal(err)
 	}
 
-	errs := c.Validate(&gconfigv1alpha1.Providers{})
+	errs := c.Validate()
 	assert.Nil(t, errs)
 }
 
@@ -49,12 +49,12 @@ groups:
     - c@test.com
 `
 
-	c, err := parseContents("config.yml", []byte(str))
+	c, err := parseContents("config.yml", []byte(str), &gconfigv1alpha1.Providers{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	errs := c.Validate(&gconfigv1alpha1.Providers{})
+	errs := c.Validate()
 	assert.Equal(t, "config.yml:12:7: c@test.com must be defined as a user or an admin", errs.Error())
 }
 
@@ -75,7 +75,7 @@ func TestErrorPrintingNoFilename(t *testing.T) {
 		},
 	}
 
-	errs := c.Validate(&gconfigv1alpha1.Providers{})
+	errs := c.Validate()
 	assert.Equal(t, "duplicate group ID test", errs.Error())
 }
 
@@ -86,13 +86,7 @@ func TestValidAccounts(t *testing.T) {
       - "123456789012"
     policy: TEST_POLICY
 `
-
-	c, err := parseContents("config.yml", []byte(str))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = c.Validate(&gconfigv1alpha1.Providers{
+	providers := &gconfigv1alpha1.Providers{
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
@@ -104,36 +98,13 @@ func TestValidAccounts(t *testing.T) {
 				},
 			},
 		},
-	})
-	assert.NoError(t, err)
-}
+	}
 
-// the role "test" points to an account which hasn't been defined in any provider.
-func TestInvalidAccounts(t *testing.T) {
-	str := `roles:
-  - id: test
-    accounts: 
-      - "123456789012"
-    policy: TEST_POLICY
-`
-
-	c, err := parseContents("config.yml", []byte(str))
+	c, err := parseContents("config.yml", []byte(str), providers)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	err = c.Validate(&gconfigv1alpha1.Providers{
-		Providers: []*gconfigv1alpha1.Provider{
-			{
-				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
-					{
-						Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
-						Id:   "234567890123",
-					},
-				},
-			},
-		},
-	})
-	assert.Equal(t, "config.yml:2:5: role test references an account that doesn't exist: 123456789012", err.Error())
+	err = c.Validate()
+	assert.NoError(t, err)
 }

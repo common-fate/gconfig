@@ -3,6 +3,7 @@ package gconfig
 import (
 	"time"
 
+	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
 	"gopkg.in/yaml.v3"
 )
 
@@ -12,8 +13,19 @@ type Config struct {
 	Admins []Member `yaml:"admins"`
 	Users  []Member `yaml:"users"`
 	Groups []Group  `yaml:"groups"`
-	Roles  []Role   `yaml:"roles"`
+	Roles  []*Role  `yaml:"roles"`
 	Tests  []Test   `yaml:"tests"`
+
+	providers *gconfigv1alpha1.Providers
+}
+
+// GetProviders returns the providers associated with the config.
+// These providers are set when the config is parsed from YAML
+func (c *Config) GetProviders() []*gconfigv1alpha1.Provider {
+	if c.providers == nil {
+		return nil
+	}
+	return c.providers.Providers
 }
 
 type Group struct {
@@ -96,6 +108,7 @@ type Role struct {
 	Policy   string   `yaml:"policy"`
 	Rules    []Rule   `yaml:"rules"`
 
+	roleAccounts []RoleAccount
 	// pos is used for displaying linting errors
 	pos *FilePosition
 }
@@ -128,6 +141,13 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 
 func (r Role) filePosition() *FilePosition {
 	return r.pos
+}
+
+// RoleAccount is a binding of a role to an Account
+// in a particular provider
+type RoleAccount struct {
+	AccountID  string
+	ProviderID string
 }
 
 // Test is the container for all Granted configuration tests

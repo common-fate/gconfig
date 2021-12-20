@@ -16,12 +16,12 @@ func (e *ErrInvalidAWSAccount) Error() string {
 	return fmt.Sprintf("account %s is not a valid AWS account: must be 12 characters long", e.Account)
 }
 
-func (c *Config) Validate(providers *gconfigv1alpha1.Providers) error {
+func (c *Config) Validate() error {
 	var errs *multierror.Error
 
 	providerMap := make(map[string]*gconfigv1alpha1.Provider)
 	accountMap := make(map[string]*gconfigv1alpha1.Account)
-	for _, p := range providers.Providers {
+	for _, p := range c.GetProviders() {
 		if _, ok := providerMap[p.Id]; ok {
 			// this should never happen as we have server-side validation to avoid duplicate provider IDs.
 			return fmt.Errorf("duplicate provider %s", p.Id)

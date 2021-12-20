@@ -11,6 +11,19 @@ import (
 
 var (
 	cfg = Config{
+		providers: &gconfigv1alpha1.Providers{
+			Providers: []*gconfigv1alpha1.Provider{
+				{
+					Id: "aws",
+					Accounts: []*gconfigv1alpha1.Account{
+						{
+							Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
+							Id:   "acc",
+						},
+					},
+				},
+			},
+		},
 		Type: "granted/v1alpha1",
 		Admins: []Member{
 			{
@@ -33,11 +46,17 @@ var (
 				},
 			},
 		},
-		Roles: []Role{
+		Roles: []*Role{
 			{
 				ID:       "role",
 				Accounts: []string{"acc"},
-				Policy:   "policy",
+				roleAccounts: []RoleAccount{
+					{
+						AccountID:  "acc",
+						ProviderID: "aws",
+					},
+				},
+				Policy: "policy",
 				Rules: []Rule{
 					{
 						Policy:          "allow",
@@ -86,9 +105,14 @@ var (
 		},
 		Roles: []*gconfigv1alpha1.Role{
 			{
-				Id:       "role",
-				Accounts: []string{"acc"},
-				Policy:   "policy",
+				Id: "role",
+				Accounts: []*gconfigv1alpha1.RoleAccount{
+					{
+						ProviderId: "aws",
+						AccountId:  "acc",
+					},
+				},
+				Policy: "policy",
 				Rules: []*gconfigv1alpha1.Rule{
 					{
 						Policy:          "allow",
@@ -120,6 +144,6 @@ func TestSerialize(t *testing.T) {
 }
 
 func TestDeserialize(t *testing.T) {
-	reversed := FromProtobuf(expected)
+	reversed := FromProtobuf(expected, cfg.providers)
 	assert.Equal(t, cfg, reversed)
 }
