@@ -10,6 +10,7 @@ type Changes struct {
 	UpdateUsers  []UpdateUser
 	DeleteAdmins []string
 	AddAdmins    []string
+	UpdateRoles  []UpdateRole
 }
 
 // Empty returns true if no changes need to be made
@@ -19,6 +20,13 @@ func (c Changes) Empty() bool {
 		len(c.UpdateUsers) == 0 &&
 		len(c.DeleteAdmins) == 0 &&
 		len(c.AddAdmins) == 0)
+}
+
+type UpdateRole struct {
+	id      string
+	account string
+	policy  string
+	rule    string
 }
 
 type UpdateUser struct {
@@ -99,6 +107,17 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 		} else {
 			ch.DeleteUsers = append(ch.DeleteUsers, email)
 		}
+	}
+
+	//return all the new roles
+	for _, r := range c.Roles {
+		ch.UpdateRoles = append(ch.UpdateRoles, UpdateRole{
+			id:      r.ID,
+			account: r.Accounts[0],
+			policy:  r.Policy,
+			rule:    r.Rules[0].Group,
+		})
+
 	}
 
 	return ch, nil
