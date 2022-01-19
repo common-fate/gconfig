@@ -16,6 +16,7 @@ func (e *ErrInvalidAWSAccount) Error() string {
 	return fmt.Sprintf("account %s is not a valid AWS account: must be 12 characters long", e.Account)
 }
 
+// This method should be used to validate users and groups
 func (c *Config) Validate() error {
 	var errs *multierror.Error
 
