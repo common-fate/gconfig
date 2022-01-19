@@ -63,17 +63,6 @@ func (c *Config) Validate() error {
 		groupMap[g.ID] = true
 	}
 
-	// all roles must reference accounts that we have references to in the providers
-	for _, r := range c.Roles {
-		for _, acc := range r.Accounts {
-			if _, ok := accountMap[acc]; !ok {
-				err := fmt.Errorf("role %s references an account that doesn't exist: %s", r.ID, acc)
-				err = printLintError(r, err)
-				errs = multierror.Append(errs, err)
-			}
-		}
-	}
-
 	if errs.ErrorOrNil() != nil {
 		errs.ErrorFormat = func(all []error) string {
 			var errStrs []string
