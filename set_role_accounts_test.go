@@ -193,3 +193,199 @@ func TestSetRoleAccounts_ConflictingAliases(t *testing.T) {
 	// TODO: line and character number will need to be updated once feature is implemented
 	assert.Equal(t, "config.yml:2:5: role test: account 'dev' is ambiguous and could refer to one of these account names:\n\n    - aws:dev:123456789012 (TYPE_AWS_ACCOUNT 123456789012 in provider aws)\n    - aws:dev:222333444555 (TYPE_AWS_ACCOUNT 222333444555 in provider aws)\n\nPlease replace 'dev' with the account name above that you meant (e.g. aws:dev:123456789012).", err.Error())
 }
+
+func TestSetRoleAccounts_PartialAlias(t *testing.T) {
+	str := `roles:
+  - id: test
+    accounts: 
+      - "aws:dev"
+    policy: TEST_POLICY
+  `
+
+	// an alias "dev" is provided for account ID 123456789012
+	providers := &gconfigv1alpha1.Providers{
+		Providers: []*gconfigv1alpha1.Provider{
+			{
+				Id: "aws",
+				Accounts: []*gconfigv1alpha1.Account{
+					{
+						Type:    gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
+						Id:      "123456789012",
+						Aliases: []string{"dev"},
+					},
+				},
+			},
+		},
+	}
+
+	c, err := parseContents("config.yml", []byte(str), providers)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// the RoleAccount should still refer to the account ID rather than the alias
+	expected := RoleAccount{
+		AccountID:  "123456789012",
+		ProviderID: "aws",
+	}
+	if len(c.Roles) != 1 {
+		t.Fatal("expected 1 role to be parsed")
+	}
+
+	actual := c.Roles[0].roleAccounts[0]
+
+	assert.Equal(t, expected, actual)
+}
+
+func TestSetRoleAccounts_FullWithAlias(t *testing.T) {
+	str := `roles:
+  - id: test
+    accounts: 
+      - "aws:dev:123456789012"
+    policy: TEST_POLICY
+  `
+
+	// an alias "dev" is provided for account ID 123456789012
+	providers := &gconfigv1alpha1.Providers{
+		Providers: []*gconfigv1alpha1.Provider{
+			{
+				Id: "aws",
+				Accounts: []*gconfigv1alpha1.Account{
+					{
+						Type:    gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
+						Id:      "123456789012",
+						Aliases: []string{"dev"},
+					},
+				},
+			},
+		},
+	}
+
+	c, err := parseContents("config.yml", []byte(str), providers)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// the RoleAccount should still refer to the account ID rather than the alias
+	expected := RoleAccount{
+		AccountID:  "123456789012",
+		ProviderID: "aws",
+	}
+	if len(c.Roles) != 1 {
+		t.Fatal("expected 1 role to be parsed")
+	}
+
+	actual := c.Roles[0].roleAccounts[0]
+
+	assert.Equal(t, expected, actual)
+}
+
+func TestSetRoleAccounts_OU(t *testing.T) {
+	str := `roles:
+  - id: test
+    accounts: 
+      - "ou-4w0n-bads234"
+    policy: TEST_POLICY
+  `
+
+	// a name "dev" is provided for account ID 123456789012 and the ou "ou-4w0n-bads234"
+	providers := &gconfigv1alpha1.Providers{
+		Providers: []*gconfigv1alpha1.Provider{
+			{
+				Id: "aws",
+				Accounts: []*gconfigv1alpha1.Account{
+					{
+						Type:     gconfigv1alpha1.Account_TYPE_UNSPECIFIED,
+						Id:       "ou-4w0n-bads234",
+						Name:     "dev",
+						Children: []*gconfigv1alpha1.Account{{Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT, Id: "12345678912", Name: "dev"}, {Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT, Id: "02345678912", Name: "admin"}},
+					},
+				},
+			},
+		},
+	}
+
+	c, err := parseContents("config.yml", []byte(str), providers)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// the RoleAccount should still refer to the account ID rather than the alias, there should be a single role account for the ou
+	expected1 := RoleAccount{
+		AccountID:  "12345678912",
+		ProviderID: "aws",
+	}
+	expected2 := RoleAccount{
+		AccountID:  "02345678912",
+		ProviderID: "aws",
+	}
+	if len(c.Roles) != 1 {
+		t.Fatal("expected 1 role to be parsed")
+	}
+	if len(c.Roles[0].roleAccounts) != 2 {
+		t.Fatal("expected 2 roleaccounts to be generated")
+	}
+
+	actual := c.Roles[0].roleAccounts[0]
+
+	assert.Equal(t, expected1, actual)
+
+	actual = c.Roles[0].roleAccounts[1]
+
+	assert.Equal(t, expected2, actual)
+}
+
+func TestSetRoleAccounts_FullWithAliasOU(t *testing.T) {
+	str := `roles:
+  - id: test
+    accounts: 
+      - "aws:dev:ou-4w0n-bads234"
+    policy: TEST_POLICY
+  `
+
+	// a name "dev" is provided for account ID 123456789012 and the ou "ou-4w0n-bads234"
+	providers := &gconfigv1alpha1.Providers{
+		Providers: []*gconfigv1alpha1.Provider{
+			{
+				Id: "aws",
+				Accounts: []*gconfigv1alpha1.Account{
+					{
+						Type:     gconfigv1alpha1.Account_TYPE_UNSPECIFIED,
+						Id:       "ou-4w0n-bads234",
+						Name:     "dev",
+						Children: []*gconfigv1alpha1.Account{{Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT, Id: "12345678912", Name: "dev"}, {Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT, Id: "02345678912", Name: "admin"}},
+					},
+				},
+			},
+		},
+	}
+
+	c, err := parseContents("config.yml", []byte(str), providers)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// the RoleAccount should still refer to the account ID rather than the alias, there should be a single role account for the ou
+	expected1 := RoleAccount{
+		AccountID:  "12345678912",
+		ProviderID: "aws",
+	}
+	expected2 := RoleAccount{
+		AccountID:  "02345678912",
+		ProviderID: "aws",
+	}
+	if len(c.Roles) != 1 {
+		t.Fatal("expected 1 role to be parsed")
+	}
+	if len(c.Roles[0].roleAccounts) != 2 {
+		t.Fatal("expected 2 roleaccounts to be generated")
+	}
+
+	actual := c.Roles[0].roleAccounts[0]
+
+	assert.Equal(t, expected1, actual)
+
+	actual = c.Roles[0].roleAccounts[1]
+
+	assert.Equal(t, expected2, actual)
+}

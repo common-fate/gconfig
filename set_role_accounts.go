@@ -2,6 +2,7 @@ package gconfig
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
@@ -14,12 +15,24 @@ type accountAndProvider struct {
 
 // this will return true if the format is a string containing 12 numeric characters
 // if false, we can treat this account as an alias
-func IsAccountAnAWSAccountID(account string) bool {
-	if len(account) != 12 {
+func IsStringAnAWSAccountID(input string) bool {
+	if len(input) != 12 {
 		return false
 	}
 	isNotDigit := func(c rune) bool { return c < '0' || c > '9' }
-	return strings.IndexFunc(string(account), isNotDigit) == -1
+	return strings.IndexFunc(string(input), isNotDigit) == -1
+}
+
+func IsStringAnAWSOUID(input string) bool {
+	// "ou-4w0n-bads234"
+
+	if len(input) != 15 {
+		return false
+	}
+	// This only returns an error if the regex doesn't compile, so we ignore it
+	matched, _ := regexp.MatchString("ou-([a-z0-9]){4}-([a-z0-9]){7}", input)
+
+	return matched
 }
 
 // setRoleAccounts sets the RoleAccounts field on all Roles in the config.
@@ -44,15 +57,15 @@ func (c *Config) setRoleAccounts() error {
 			accountPieces := strings.Split(a, ":")
 			numberOfPieces := len(accountPieces)
 			accountId := a
-			var ap accountAndProvider
 			if numberOfPieces > 3 {
 				err := fmt.Errorf("role %s references an account that is in the wrong format: %s . Account must be in the format(s) <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, a)
 				err = printLintError(r, err)
 				return err
 			} else if numberOfPieces == 3 {
+				// an account in the format <provider>:<alias>:<accountId> we can use the account id directly
 				accountId = accountPieces[2]
 			} else {
-				if numberOfPieces == 2 || !IsAccountAnAWSAccountID(a) {
+				if numberOfPieces == 2 || !(IsStringAnAWSAccountID(a) || IsStringAnAWSOUID(a)) {
 					alias := a
 					if numberOfPieces == 2 {
 						alias = accountPieces[1]
@@ -76,19 +89,29 @@ func (c *Config) setRoleAccounts() error {
 				}
 
 			}
-			v, ok := accountMap[accountId]
+			ap, ok := accountMap[accountId]
 			if !ok {
 				err := fmt.Errorf("role %s references an account that doesn't exist: %s", r.ID, a)
 				err = printLintError(r, err)
 				return err
 			}
-			ap = v
-
-			ra := RoleAccount{
-				AccountID:  ap.Account.Id,
-				ProviderID: ap.Provider.Id,
+			if ap.Account.Type == gconfigv1alpha1.Account_TYPE_UNSPECIFIED {
+				// if it is an OU account, add all the children rather than the ou
+				for _, acc := range ap.Account.Children {
+					ra := RoleAccount{
+						AccountID:  acc.Id,
+						ProviderID: ap.Provider.Id,
+					}
+					r.roleAccounts = append(r.roleAccounts, ra)
+				}
+			} else {
+				ra := RoleAccount{
+					AccountID:  ap.Account.Id,
+					ProviderID: ap.Provider.Id,
+				}
+				r.roleAccounts = append(r.roleAccounts, ra)
 			}
-			r.roleAccounts = append(r.roleAccounts, ra)
+
 		}
 	}
 	return nil
