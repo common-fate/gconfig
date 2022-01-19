@@ -191,5 +191,5 @@ func TestSetRoleAccounts_ConflictingAliases(t *testing.T) {
 
 	_, err := parseContents("config.yml", []byte(str), providers)
 	// TODO: line and character number will need to be updated once feature is implemented
-	assert.Equal(t, "config.yml:3:5: account dev is ambiguous and could refer to: 'aws:123456789012', 'aws:222333444555'. Please replace 'dev' with one of these.", err.Error())
+	assert.Equal(t, "config.yml:2:5: role test: account 'dev' is ambiguous and could refer to one of these account names:\n\n    - aws:dev:123456789012 (TYPE_AWS_ACCOUNT 123456789012 in provider aws)\n    - aws:dev:222333444555 (TYPE_AWS_ACCOUNT 222333444555 in provider aws)\n\nPlease replace 'dev' with the account name above that you meant (e.g. aws:dev:123456789012).", err.Error())
 }
