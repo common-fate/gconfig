@@ -1,0 +1,7 @@
+{
+    // VS Code Extension that adds syntax highlighting to proto files
+    // https://marketplace.visualstudio.com/items?itemName=zxh404.vscode-proto3
+    "recommendations": [
+        "zxh404.vscode-proto3"
+    ]
+}
