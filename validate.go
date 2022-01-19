@@ -17,6 +17,7 @@ func (e *ErrInvalidAWSAccount) Error() string {
 }
 
 // This method should be used to validate users and groups
+// Validation for role accounts is done when the file is parsed
 func (c *Config) Validate() error {
 	var errs *multierror.Error
 
