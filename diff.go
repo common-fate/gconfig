@@ -10,7 +10,13 @@ type Changes struct {
 	UpdateUsers  []UpdateUser
 	DeleteAdmins []string
 	AddAdmins    []string
+	AddRoles     []string
+	DeleteRoles  []string
 	UpdateRoles  []UpdateRole
+	// @TODO:
+	// - AddGroups
+	// - DeleteGroups
+	// - UpdateGroups
 }
 
 // Empty returns true if no changes need to be made
@@ -19,20 +25,22 @@ func (c Changes) Empty() bool {
 		len(c.AddUsers) == 0 &&
 		len(c.UpdateUsers) == 0 &&
 		len(c.DeleteAdmins) == 0 &&
+		len(c.AddRoles) == 0 &&
+		len(c.DeleteRoles) == 0 &&
+		len(c.UpdateRoles) == 0 &&
 		len(c.AddAdmins) == 0)
-}
-
-type UpdateRole struct {
-	id      string
-	account string
-	policy  string
-	rule    string
 }
 
 type UpdateUser struct {
 	Email string
 	// whether to make the user an admin or not
 	Admin bool
+}
+
+type UpdateRole struct {
+	ID string
+	// String describing what field changed
+	AlteredField []string // @TODO: potentially make into enum?
 }
 
 type ErrNoInPlaceUpdates struct {
@@ -109,15 +117,123 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 		}
 	}
 
-	//return all the new roles
-	for _, r := range c.Roles {
-		ch.UpdateRoles = append(ch.UpdateRoles, UpdateRole{
-			id:      r.ID,
-			account: r.Accounts[0],
-			policy:  r.Policy,
-			rule:    r.Rules[0].Group,
-		})
+	allNewRoles := make(map[string]Role)
+	allPrevRoles := make(map[string]Role)
+	// for _, u := range c.Roles {
 
+	// 	append(ch.UpdateUsers, UpdateUser{
+	// 				Email: email,
+	// 				Admin: new.IsAdmin,
+	// 			})
+	// 	allNewUsers[u.Email] = userDetails{IsAdmin: true}
+	// }
+	// oldRoles  := make(map[string]*Role)
+
+	for _, u := range c.Roles {
+		allNewRoles[u.ID] = *u
+		// allNewUsers[u.Email] = userDetails{IsAdmin: true}
+	}
+	for _, o := range old.Roles {
+		allPrevRoles[o.ID] = *o
+	}
+
+	// for each role, check if it's been updated
+	for id, new := range allNewRoles {
+		// If theres a match in ID, that means the roll hasn't been deleted,
+		// either updated or stayed the same
+		if old, ok := allPrevRoles[id]; ok {
+			// role is common between old and new, so don't delete them
+			if old.ID == new.ID {
+				// instantiate a new UpdateRole obj for eact role, only add it to the list
+				// if the role has bene updated
+				ruleUpdateObj := UpdateRole{
+					ID:           id,
+					AlteredField: []string{},
+				}
+
+				oldRuleCount := len(old.Rules)
+				newRuleCount := len(new.Rules)
+
+				// If there's a policy difference
+				if old.Policy != new.Policy {
+					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Policy")
+				}
+
+				// If there's a rule count difference
+				if oldRuleCount != newRuleCount {
+					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Rules")
+				}
+
+				oldAccounts := old.Accounts
+				newAccounts := new.Accounts
+
+				// Examples
+				// old: 0123456789012, 0123456789013
+				// new: 0123456789012, 0123456789013, 0123456789014
+
+				// iterate through the old accounts,
+				// if the account is not in the new accounts,
+				// then it has been deleted
+				match := true
+				for _, oldAccount := range oldAccounts {
+					for _, newAccount := range newAccounts {
+						if oldAccount == newAccount {
+							match = true
+							break
+						} else {
+							match = false
+						}
+					}
+					if !match {
+						break
+					}
+				}
+				if !match {
+					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Accounts")
+				}
+
+				// iterate through the new accounts,
+				// if the account is not in the old accounts,
+				// then it has been added
+				match = true
+				for _, newAccount := range newAccounts {
+					for _, oldAccount := range oldAccounts {
+						if newAccount == oldAccount {
+							match = true
+							break
+						} else {
+							match = false
+						}
+					}
+					if !match {
+						break
+					}
+				}
+				if !match {
+					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Accounts")
+				}
+
+				// @TODO: Support deep rule diffing...
+
+				// If there's been any changes to the Role, add it to the UpdatedRoles list
+				if len(ruleUpdateObj.AlteredField) > 0 {
+					ch.UpdateRoles = append(ch.UpdateRoles, ruleUpdateObj)
+				}
+
+			}
+			delete(allPrevRoles, id)
+
+		} else {
+			// role is new
+			ch.AddRoles = append(ch.AddRoles, new.ID)
+		}
+	}
+
+	for id, old := range allPrevRoles {
+		// if old role is not in new, then it has been deleted
+		if _, ok := allNewRoles[id]; !ok {
+			ch.DeleteRoles = append(ch.DeleteRoles, old.ID)
+		}
 	}
 
 	return ch, nil

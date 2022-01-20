@@ -16,6 +16,8 @@ func (e *ErrInvalidAWSAccount) Error() string {
 	return fmt.Sprintf("account %s is not a valid AWS account: must be 12 characters long", e.Account)
 }
 
+// This method should be used to validate users and groups
+// Validation for role accounts is done when the file is parsed
 func (c *Config) Validate() error {
 	var errs *multierror.Error
 
@@ -61,17 +63,6 @@ func (c *Config) Validate() error {
 			}
 		}
 		groupMap[g.ID] = true
-	}
-
-	// all roles must reference accounts that we have references to in the providers
-	for _, r := range c.Roles {
-		for _, acc := range r.Accounts {
-			if _, ok := accountMap[acc]; !ok {
-				err := fmt.Errorf("role %s references an account that doesn't exist: %s", r.ID, acc)
-				err = printLintError(r, err)
-				errs = multierror.Append(errs, err)
-			}
-		}
 	}
 
 	if errs.ErrorOrNil() != nil {
