@@ -129,6 +129,7 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	r.ID = tmp.ID
 	r.Accounts = tmp.Accounts
 	r.Policy = tmp.Policy
+	r.Rules = tmp.Rules
 
 	// Save the line number
 	r.pos = &FilePosition{

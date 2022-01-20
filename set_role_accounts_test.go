@@ -2,6 +2,7 @@ package gconfig
 
 import (
 	"testing"
+	"time"
 
 	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
 	"github.com/stretchr/testify/assert"
@@ -43,6 +44,48 @@ func TestSetRoleAccounts(t *testing.T) {
 	}
 
 	actual := c.Roles[0].roleAccounts[0]
+
+	assert.Equal(t, expected, actual)
+}
+
+func TestSetRoleRuleAccounts(t *testing.T) {
+	str := `roles:
+  - id: test
+    accounts: 
+      - "123456789012"
+    policy: TEST_POLICY
+    rules:
+      - policy: allow
+        group: developers
+        sessionDuration: 8h
+  `
+
+	providers := &gconfigv1alpha1.Providers{
+		Providers: []*gconfigv1alpha1.Provider{
+			{
+				Id: "aws",
+				Accounts: []*gconfigv1alpha1.Account{
+					{
+						Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
+						Id:   "123456789012",
+					},
+				},
+			},
+		},
+	}
+
+	c, err := parseContents("config.yml", []byte(str), providers)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := Rule{
+		Group:           "developers",
+		Policy:          "allow",
+		SessionDuration: 8 * time.Hour,
+	}
+
+	actual := c.Roles[0].Rules[0]
 
 	assert.Equal(t, expected, actual)
 }
