@@ -136,8 +136,15 @@ func collectAccountAndProvider(a *gconfigv1alpha1.Account, p *gconfigv1alpha1.Pr
 		collectAccountAndProvider(child, p, accountMap, aliasMap)
 	}
 }
+
 func generateAmbiguousAliasError(r *Role, a string, alias string, aliasAccounts []accountAndProvider) error {
-	errMessage := fmt.Sprintf("role %s: account '%s' is ambiguous and could refer to one of these account names:\n\n", r.ID, a)
+	errMessage := ""
+	if r == nil {
+		errMessage = fmt.Sprintf("account '%s' is ambiguous and could refer to one of these account names:\n\n", a)
+	} else {
+		errMessage = fmt.Sprintf("role %s: account '%s' is ambiguous and could refer to one of these account names:\n\n", r.ID, a)
+	}
+
 	example := ""
 	for i, account := range aliasAccounts {
 		if i == 0 {
@@ -151,4 +158,58 @@ func generateAmbiguousAliasError(r *Role, a string, alias string, aliasAccounts 
 	errMessage += fmt.Sprintf("\nPlease replace '%s' with the account name above that you meant (e.g. %s).", a, example)
 
 	return fmt.Errorf(errMessage)
+}
+
+// This utility is used in the CLI to match an alias or account string to a provider and account in the config
+func MatchAccountOrAlias(providers []*gconfigv1alpha1.Provider, accountInput string) (*accountAndProvider, error) {
+	accountMap := make(map[string]accountAndProvider)
+	aliasMap := make(map[string][]accountAndProvider)
+	for _, p := range providers {
+		for _, acc := range p.Accounts {
+			collectAccountAndProvider(acc, p, accountMap, aliasMap)
+		}
+	}
+
+	// logic for matching aliases
+	accountPieces := strings.Split(accountInput, ":")
+	numberOfPieces := len(accountPieces)
+	accountId := accountInput
+	if numberOfPieces > 3 {
+		return nil, fmt.Errorf("account: %s, must be in the format(s) <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", accountInput)
+
+	} else if numberOfPieces == 3 {
+		// an account in the format <provider>:<alias>:<accountId> we can use the account id directly
+		accountId = accountPieces[2]
+	} else {
+		if numberOfPieces == 2 || !(IsStringAnAWSAccountID(accountInput) || IsStringAnAWSOUID(accountInput)) {
+			alias := accountInput
+			if numberOfPieces == 2 {
+				alias = accountPieces[1]
+			}
+			// it must be an alias
+			// find a match then set the acountid =
+			aliasAccounts, ok := aliasMap[alias]
+			if !ok {
+				return nil, fmt.Errorf("account alias does not exist: %s", accountInput)
+			}
+			if len(aliasAccounts) > 1 {
+				return nil, generateAmbiguousAliasError(nil, accountInput, alias, aliasAccounts)
+
+			}
+			// only one alias matches so we use that as the account
+			accountId = aliasAccounts[0].Account.Id
+		}
+
+	}
+	ap, ok := accountMap[accountId]
+	if !ok {
+		return nil, fmt.Errorf("account alias does not exist: %s", accountInput)
+	}
+
+	// If an account is an OU, then return the account does not exist error because it cannot be assumed
+	if ap.Account.Type == gconfigv1alpha1.Account_TYPE_UNSPECIFIED {
+		return nil, fmt.Errorf("account alias does not exist: %s", accountInput)
+	} else {
+		return &ap, nil
+	}
 }
