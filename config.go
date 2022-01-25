@@ -103,11 +103,11 @@ type Rule struct {
 }
 
 type Role struct {
-	ID       string   `yaml:"id"`
-	Accounts []string `yaml:"accounts"`
-	Policy   string   `yaml:"policy"`
-	Rules    []Rule   `yaml:"rules"`
-
+	ID           string   `yaml:"id"`
+	Accounts     []string `yaml:"accounts"`
+	Policy       string   `yaml:"policy"`
+	Rules        []Rule   `yaml:"rules"`
+	Audited      bool     `yaml:"audited"`
 	roleAccounts []RoleAccount
 	// pos is used for displaying linting errors
 	pos *FilePosition
