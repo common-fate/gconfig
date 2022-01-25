@@ -213,6 +213,10 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Accounts")
 				}
 
+				if old.Audited != new.Audited {
+					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Audited")
+				}
+
 				// @TODO: Support deep rule diffing...
 
 				// If there's been any changes to the Role, add it to the UpdatedRoles list

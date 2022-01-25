@@ -32,8 +32,9 @@ func (c *Config) SerializeProtobuf() *gconfigv1alpha1.Config {
 	}
 	for _, r := range c.Roles {
 		role := &gconfigv1alpha1.Role{
-			Id:     r.ID,
-			Policy: r.Policy,
+			Id:      r.ID,
+			Policy:  r.Policy,
+			Audited: r.Audited,
 		}
 		for _, ra := range r.roleAccounts {
 			role.Accounts = append(role.Accounts, &gconfigv1alpha1.RoleAccount{
@@ -99,8 +100,9 @@ func FromProtobuf(c *gconfigv1alpha1.Config, providers *gconfigv1alpha1.Provider
 	}
 	for _, r := range c.Roles {
 		role := Role{
-			ID:     r.Id,
-			Policy: r.Policy,
+			ID:      r.Id,
+			Policy:  r.Policy,
+			Audited: r.Audited,
 		}
 		for _, ra := range r.Accounts {
 			role.roleAccounts = append(role.roleAccounts, RoleAccount{
