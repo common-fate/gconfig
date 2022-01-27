@@ -58,7 +58,7 @@ func (c *Config) setRoleAccounts() error {
 			numberOfPieces := len(accountPieces)
 			accountId := a
 			if numberOfPieces > 3 {
-				err := fmt.Errorf("role %s references an account that is in the wrong format: %s . Account must be in the format(s) <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, a)
+				err := fmt.Errorf("role %s references an account that is in the wrong format: %s . \naccount must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, a)
 				err = printLintError(r, err)
 				return err
 			} else if numberOfPieces == 3 {
@@ -74,7 +74,7 @@ func (c *Config) setRoleAccounts() error {
 					// find a match then set the acountid =
 					aliasAccounts, ok := aliasMap[alias]
 					if !ok {
-						err := fmt.Errorf("role %s references an account alias that doesn't exist: %s", r.ID, a)
+						err := fmt.Errorf("role %s references an account alias that doesn't exist: %s \naccount must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, a)
 						err = printLintError(r, err)
 						return err
 					}
@@ -175,7 +175,7 @@ func MatchAccountOrAlias(providers []*gconfigv1alpha1.Provider, accountInput str
 	numberOfPieces := len(accountPieces)
 	accountId := accountInput
 	if numberOfPieces > 3 {
-		return nil, fmt.Errorf("account: %s, must be in the format(s) <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", accountInput)
+		return nil, fmt.Errorf("account: %s, must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", accountInput)
 
 	} else if numberOfPieces == 3 {
 		// an account in the format <provider>:<alias>:<accountId> we can use the account id directly
@@ -190,7 +190,7 @@ func MatchAccountOrAlias(providers []*gconfigv1alpha1.Provider, accountInput str
 			// find a match then set the acountid =
 			aliasAccounts, ok := aliasMap[alias]
 			if !ok {
-				return nil, fmt.Errorf("account alias does not exist: %s", accountInput)
+				return nil, fmt.Errorf("account alias does not exist: %s\naccount must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", accountInput)
 			}
 			if len(aliasAccounts) > 1 {
 				return nil, generateAmbiguousAliasError(nil, accountInput, alias, aliasAccounts)
