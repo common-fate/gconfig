@@ -1,6 +1,7 @@
 package gconfig
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -52,6 +53,10 @@ func (c *Config) Validate() error {
 			err := fmt.Errorf("duplicate group ID %s", g.ID)
 			err = printLintError(g, err)
 			errs = multierror.Append(errs, err)
+		}
+		if g.Name == "granted:administrators" {
+			err := errors.New("a group called `granted:administrators` cannot be created. Please choose a different name")
+			return err
 		}
 
 		for _, m := range g.Members {
