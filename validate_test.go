@@ -108,3 +108,24 @@ func TestValidAccounts(t *testing.T) {
 	err = c.Validate()
 	assert.NoError(t, err)
 }
+
+func TestGrantedAdministratorsGroupCannotBeCreated(t *testing.T) {
+	str := `admins:
+- a@test.com
+
+groups:
+- name: granted:administrators
+  id: gadmins
+  members:
+    - a@test.com
+`
+
+	c, err := parseContents("config.yml", []byte(str), &gconfigv1alpha1.Providers{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	errs := c.Validate()
+	assert.Equal(t, "a group called `granted:administrators` cannot be created. Please choose a different name", errs.Error())
+}
+
