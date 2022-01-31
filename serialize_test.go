@@ -59,7 +59,7 @@ var (
 				Policy: "policy",
 				Rules: []Rule{
 					{
-						Policy:          "allow",
+						Policy:          RulePolicyField{Policy: RulePolicyAllow.String()},
 						Group:           "test",
 						SessionDuration: time.Hour,
 					},

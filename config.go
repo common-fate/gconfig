@@ -1,7 +1,6 @@
 package gconfig
 
 import (
-	"fmt"
 	"time"
 
 	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
@@ -97,12 +96,16 @@ func (m Member) filePosition() *FilePosition {
 	return m.pos
 }
 
-type PolicyField string
+type RulePolicyField struct {
+	Policy string
+	// pos is used for displaying linting errors
+	pos *FilePosition
+}
 
 type Rule struct {
-	Policy          PolicyField   `yaml:"policy"`
-	Group           string        `yaml:"group"`
-	SessionDuration time.Duration `yaml:"sessionDuration"`
+	Policy          RulePolicyField `yaml:"policy"`
+	Group           string          `yaml:"group"`
+	SessionDuration time.Duration   `yaml:"sessionDuration"`
 }
 
 type Role struct {
@@ -117,26 +120,22 @@ type Role struct {
 
 // validates that the policy is valid at parsing time
 // To add more policy types, add to the policy.go enum
-func (p *PolicyField) UnmarshalYAML(value *yaml.Node) error {
+func (p *RulePolicyField) UnmarshalYAML(value *yaml.Node) error {
 	var tmp string
 	err := value.Decode(&tmp)
 	if err != nil {
 		return err
 	}
-	if policy, err := PolicyString(tmp); err == nil {
-		tmpP := PolicyField(policy.String())
-		p = &tmpP
-		return nil
-	} else {
-		policyValues := []string{}
-		for _, pol := range PolicyValues() {
-			policyValues = append(policyValues, pol.String())
-		}
-		return fmt.Errorf("policy: %s must be one of [%v]", tmp, policyValues)
+	p.pos = &FilePosition{
+		Col:  value.Column,
+		Line: value.Line,
 	}
+	p.Policy = tmp
+	return nil
+
 }
-func (p *PolicyField) String() string {
-	return string(*p)
+func (p *RulePolicyField) filePosition() *FilePosition {
+	return p.pos
 }
 func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	var tmp struct {

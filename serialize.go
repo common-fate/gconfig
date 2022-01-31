@@ -43,7 +43,7 @@ func (c *Config) SerializeProtobuf() *gconfigv1alpha1.Config {
 		}
 		for _, rule := range r.Rules {
 			role.Rules = append(role.Rules, &gconfigv1alpha1.Rule{
-				Policy:          rule.Policy.String(),
+				Policy:          rule.Policy.Policy,
 				Group:           rule.Group,
 				SessionDuration: durationpb.New(rule.SessionDuration),
 			})
@@ -110,7 +110,7 @@ func FromProtobuf(c *gconfigv1alpha1.Config, providers *gconfigv1alpha1.Provider
 		}
 		for _, rule := range r.Rules {
 			role.Rules = append(role.Rules, Rule{
-				Policy:          PolicyField(rule.Policy),
+				Policy:          RulePolicyField{Policy: rule.Policy},
 				Group:           rule.Group,
 				SessionDuration: rule.SessionDuration.AsDuration(),
 			})

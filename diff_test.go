@@ -126,7 +126,7 @@ func TestUpdateRoleDiff(t *testing.T) {
 				Accounts: []string{"123456789012", "123456789013"},
 				Rules: []Rule{
 					{
-						Policy: "allow",
+						Policy: RulePolicyField{Policy: RulePolicyAllow.String()},
 					},
 				},
 			},

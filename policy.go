@@ -1,10 +1,10 @@
 package gconfig
 
-type Policy int
+type RulePolicy int
 
-//go:generate go run github.com/alvaroloes/enumer -type=Policy -linecomment
+//go:generate go run github.com/alvaroloes/enumer -type=RulePolicy -linecomment
 const (
-	PolicyAllow           Policy = iota + 1 // allow
-	PolicyRequireApproval                   // requireApproval
-	PolicyRequireReason                     // requireReason
+	RulePolicyAllow           RulePolicy = iota + 1 // allow
+	RulePolicyRequireApproval                       // requireApproval
+	RulePolicyRequireReason                         // requireReason
 )
