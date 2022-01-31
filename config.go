@@ -107,7 +107,6 @@ type Role struct {
 	Accounts     []string `yaml:"accounts"`
 	Policy       string   `yaml:"policy"`
 	Rules        []Rule   `yaml:"rules"`
-	Audited      bool     `yaml:"audited"`
 	roleAccounts []RoleAccount
 	// pos is used for displaying linting errors
 	pos *FilePosition
@@ -119,7 +118,6 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 		Accounts []string `yaml:"accounts"`
 		Policy   string   `yaml:"policy"`
 		Rules    []Rule   `yaml:"rules"`
-		Audited  bool     `yaml:"audited"`
 	}
 
 	err := value.Decode(&tmp)
@@ -131,7 +129,6 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	r.Accounts = tmp.Accounts
 	r.Policy = tmp.Policy
 	r.Rules = tmp.Rules
-	r.Audited = tmp.Audited
 
 	// Save the line number
 	r.pos = &FilePosition{
@@ -170,7 +167,6 @@ type Given struct {
 
 type Then struct {
 	Outcome string `yaml:"outcome"`
-	Audited *bool  `yaml:"audited,omitempty"`
 }
 
 type FilePosition struct {

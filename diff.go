@@ -164,6 +164,8 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Rules")
 				}
 
+				// @TODO add diff checking for rules on roles
+
 				oldAccounts := old.Accounts
 				newAccounts := new.Accounts
 
@@ -211,10 +213,6 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				}
 				if !match {
 					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Accounts")
-				}
-
-				if old.Audited != new.Audited {
-					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Audited")
 				}
 
 				// @TODO: Support deep rule diffing...

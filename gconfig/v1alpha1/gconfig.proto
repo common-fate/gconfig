@@ -60,7 +60,6 @@ message Role {
   repeated RoleAccount accounts = 2;
   string policy = 3;
   repeated Rule rules = 4;
-  bool audited = 5;
 }
 
 // RoleAccount is a binding of a role to an Account
@@ -91,5 +90,4 @@ message Given {
 
 message Then {
   string outcome = 1;
-  optional bool audited = 2;
 }
