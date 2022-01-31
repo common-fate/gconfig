@@ -1,6 +1,7 @@
 package gconfig
 
 import (
+	"fmt"
 	"time"
 
 	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
@@ -96,8 +97,10 @@ func (m Member) filePosition() *FilePosition {
 	return m.pos
 }
 
+type PolicyField string
+
 type Rule struct {
-	Policy          string        `yaml:"policy"`
+	Policy          PolicyField   `yaml:"policy"`
 	Group           string        `yaml:"group"`
 	SessionDuration time.Duration `yaml:"sessionDuration"`
 }
@@ -112,6 +115,28 @@ type Role struct {
 	pos *FilePosition
 }
 
+// validates that the policy is valid at parsing time
+func (p *PolicyField) UnmarshalYAML(value *yaml.Node) error {
+	var tmp string
+	err := value.Decode(&tmp)
+	if err != nil {
+		return err
+	}
+	if policy, err := PolicyString(tmp); err == nil {
+		tmpP := PolicyField(policy.String())
+		p = &tmpP
+		return nil
+	} else {
+		policyValues := []string{}
+		for _, pol := range PolicyValues() {
+			policyValues = append(policyValues, pol.String())
+		}
+		return fmt.Errorf("policy: %s must be one of [%v]", tmp, policyValues)
+	}
+}
+func (p *PolicyField) String() string {
+	return string(*p)
+}
 func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	var tmp struct {
 		ID       string   `yaml:"id"`

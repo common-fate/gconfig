@@ -7,7 +7,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// ParseFile parses a Granted YAML config file
+// ParseFile parses a Granted YAML config file and implements read time checks
+// See validate.go for any checks on the config post reading the file
 func ParseFile(filename string, providers *gconfigv1alpha1.Providers) (*Config, error) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
