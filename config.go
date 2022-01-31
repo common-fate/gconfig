@@ -106,6 +106,7 @@ type Rule struct {
 	Policy          RulePolicyField `yaml:"policy"`
 	Group           string          `yaml:"group"`
 	SessionDuration time.Duration   `yaml:"sessionDuration"`
+	Breakglass      bool            `yaml:"breakglass"`
 }
 
 type Role struct {

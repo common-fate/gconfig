@@ -52,7 +52,7 @@ func Test_PolicyValidated(t *testing.T) {
       sessionDuration: 8h`
 
 	cf = b
-	c, err := parseContents("configtest.yaml", append(cf, []byte(rule2)...), &gconfigv1alpha1.Providers{Providers: []*gconfigv1alpha1.Provider{
+	providers := &gconfigv1alpha1.Providers{Providers: []*gconfigv1alpha1.Provider{
 		{
 			Id: "aws",
 			Accounts: []*gconfigv1alpha1.Account{
@@ -62,7 +62,32 @@ func Test_PolicyValidated(t *testing.T) {
 				},
 			},
 		},
-	}})
+	}}
+	c, err := parseContents("configtest.yaml", append(cf, []byte(rule2)...), providers)
+	assert.NoError(t, err)
+	assert.NotNil(t, c)
+	assert.Equal(t, c.Roles[0].Rules[0].Policy.Policy, RulePolicyRequireApproval.String())
+
+	rule3 := `    rules:
+    - policy: allow
+      breakglass: true
+      group: developers
+      sessionDuration: 8h`
+	cf = b
+	_, err = parseContents("configtest.yaml", append(cf, []byte(rule3)...), providers)
+
+	expected = "configtest.yaml:30:15: 'breakglass: true' can only be used on policies which require approval"
+	assert.EqualError(t, err, expected)
+
+	rule4 := `    rules:
+    - policy: requireApproval
+      breakglass: true
+      group: developers
+      sessionDuration: 8h`
+
+	cf = b
+
+	c, err = parseContents("configtest.yaml", append(cf, []byte(rule4)...), providers)
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	assert.Equal(t, c.Roles[0].Rules[0].Policy.Policy, RulePolicyRequireApproval.String())

@@ -73,6 +73,7 @@ message Rule {
   string policy = 1;
   string group = 2;
   google.protobuf.Duration session_duration = 3;
+  bool breakglass = 4;
 }
 
 message Test {
