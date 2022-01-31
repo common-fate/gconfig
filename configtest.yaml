@@ -1,0 +1,28 @@
+admins:
+  - a@test.com
+
+users:
+  - b@test.com
+
+groups:
+  - name: AWS Developers
+    id: developers
+    members:
+      - a@test.com
+      - b@test.com
+roles:
+  - id: admin
+    audited: true
+    accounts:
+      - 123456789012
+    policy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": "*",
+            "Resource": "*"
+          }
+        ]
+      }

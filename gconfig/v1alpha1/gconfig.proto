@@ -60,7 +60,6 @@ message Role {
   repeated RoleAccount accounts = 2;
   string policy = 3;
   repeated Rule rules = 4;
-  bool audited = 5;
 }
 
 // RoleAccount is a binding of a role to an Account
@@ -74,6 +73,7 @@ message Rule {
   string policy = 1;
   string group = 2;
   google.protobuf.Duration session_duration = 3;
+  bool breakglass = 4;
 }
 
 message Test {
@@ -91,5 +91,4 @@ message Given {
 
 message Then {
   string outcome = 1;
-  optional bool audited = 2;
 }

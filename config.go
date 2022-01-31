@@ -96,10 +96,17 @@ func (m Member) filePosition() *FilePosition {
 	return m.pos
 }
 
+type RulePolicyField struct {
+	Policy string
+	// pos is used for displaying linting errors
+	pos *FilePosition
+}
+
 type Rule struct {
-	Policy          string        `yaml:"policy"`
-	Group           string        `yaml:"group"`
-	SessionDuration time.Duration `yaml:"sessionDuration"`
+	Policy          RulePolicyField `yaml:"policy"`
+	Group           string          `yaml:"group"`
+	SessionDuration time.Duration   `yaml:"sessionDuration"`
+	Breakglass      bool            `yaml:"breakglass"`
 }
 
 type Role struct {
@@ -107,19 +114,36 @@ type Role struct {
 	Accounts     []string `yaml:"accounts"`
 	Policy       string   `yaml:"policy"`
 	Rules        []Rule   `yaml:"rules"`
-	Audited      bool     `yaml:"audited"`
 	roleAccounts []RoleAccount
 	// pos is used for displaying linting errors
 	pos *FilePosition
 }
 
+// validates that the policy is valid at parsing time
+// To add more policy types, add to the policy.go enum
+func (p *RulePolicyField) UnmarshalYAML(value *yaml.Node) error {
+	var tmp string
+	err := value.Decode(&tmp)
+	if err != nil {
+		return err
+	}
+	p.pos = &FilePosition{
+		Col:  value.Column,
+		Line: value.Line,
+	}
+	p.Policy = tmp
+	return nil
+
+}
+func (p *RulePolicyField) filePosition() *FilePosition {
+	return p.pos
+}
 func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	var tmp struct {
 		ID       string   `yaml:"id"`
 		Accounts []string `yaml:"accounts"`
 		Policy   string   `yaml:"policy"`
 		Rules    []Rule   `yaml:"rules"`
-		Audited  bool     `yaml:"audited"`
 	}
 
 	err := value.Decode(&tmp)
@@ -131,7 +155,6 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	r.Accounts = tmp.Accounts
 	r.Policy = tmp.Policy
 	r.Rules = tmp.Rules
-	r.Audited = tmp.Audited
 
 	// Save the line number
 	r.pos = &FilePosition{
@@ -170,7 +193,6 @@ type Given struct {
 
 type Then struct {
 	Outcome string `yaml:"outcome"`
-	Audited *bool  `yaml:"audited,omitempty"`
 }
 
 type FilePosition struct {

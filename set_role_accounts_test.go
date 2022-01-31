@@ -81,7 +81,7 @@ func TestSetRoleRuleAccounts(t *testing.T) {
 
 	expected := Rule{
 		Group:           "developers",
-		Policy:          "allow",
+		Policy:          RulePolicyField{Policy: RulePolicyAllow.String(), pos: c.Roles[0].Rules[0].Policy.pos},
 		SessionDuration: 8 * time.Hour,
 	}
 

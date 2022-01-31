@@ -1,13 +1,15 @@
 package gconfig
 
 import (
+	"fmt"
 	"io/ioutil"
 
 	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
 	"gopkg.in/yaml.v3"
 )
 
-// ParseFile parses a Granted YAML config file
+// ParseFile parses a Granted YAML config file and implements read time checks
+// See validate.go for any checks on the config post reading the file
 func ParseFile(filename string, providers *gconfigv1alpha1.Providers) (*Config, error) {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -46,6 +48,26 @@ func parseContents(filename string, in []byte, providers *gconfigv1alpha1.Provid
 
 	for _, r := range c.Roles {
 		r.pos.Filename = filename
+		for _, rule := range r.Rules {
+			rule.Policy.pos.Filename = filename
+			// Validates that the rule policy matches a supported policy type
+			if policy, err := RulePolicyString(rule.Policy.Policy); err != nil {
+				policyValues := []string{}
+				for _, pol := range RulePolicyValues() {
+					policyValues = append(policyValues, pol.String())
+				}
+				err = fmt.Errorf("policy: %s must be one of %v", rule.Policy.Policy, policyValues)
+				err = printLintError(&rule.Policy, err)
+				return nil, err
+
+				//the breakglass field is allowed on roles with requireApproval and allows users to bypass the approval step (but sends an alert to Granted that they have done so)
+			} else if rule.Breakglass && policy != RulePolicyRequireApproval {
+				err = fmt.Errorf("'breakglass: true' can only be used on policies which require approval")
+				err = printLintError(&rule.Policy, err)
+				return nil, err
+			}
+
+		}
 	}
 
 	err = c.setRoleAccounts()
