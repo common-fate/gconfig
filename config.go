@@ -116,6 +116,7 @@ type Role struct {
 }
 
 // validates that the policy is valid at parsing time
+// To add more policy types, add to the policy.go enum
 func (p *PolicyField) UnmarshalYAML(value *yaml.Node) error {
 	var tmp string
 	err := value.Decode(&tmp)
