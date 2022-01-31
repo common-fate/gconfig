@@ -103,18 +103,19 @@ type RulePolicyField struct {
 }
 
 type Rule struct {
-	Policy          RulePolicyField `yaml:"policy"`
-	Group           string          `yaml:"group"`
-	SessionDuration time.Duration   `yaml:"sessionDuration"`
-	Breakglass      bool            `yaml:"breakglass"`
+	Policy RulePolicyField `yaml:"policy"`
+	Group  string          `yaml:"group"`
+
+	Breakglass bool `yaml:"breakglass"`
 }
 
 type Role struct {
-	ID           string   `yaml:"id"`
-	Accounts     []string `yaml:"accounts"`
-	Policy       string   `yaml:"policy"`
-	Rules        []Rule   `yaml:"rules"`
-	roleAccounts []RoleAccount
+	ID              string        `yaml:"id"`
+	Accounts        []string      `yaml:"accounts"`
+	Policy          string        `yaml:"policy"`
+	SessionDuration time.Duration `yaml:"sessionDuration"`
+	Rules           []Rule        `yaml:"rules"`
+	roleAccounts    []RoleAccount
 	// pos is used for displaying linting errors
 	pos *FilePosition
 }
@@ -140,10 +141,11 @@ func (p *RulePolicyField) filePosition() *FilePosition {
 }
 func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	var tmp struct {
-		ID       string   `yaml:"id"`
-		Accounts []string `yaml:"accounts"`
-		Policy   string   `yaml:"policy"`
-		Rules    []Rule   `yaml:"rules"`
+		ID              string        `yaml:"id"`
+		Accounts        []string      `yaml:"accounts"`
+		Policy          string        `yaml:"policy"`
+		Rules           []Rule        `yaml:"rules"`
+		SessionDuration time.Duration `yaml:"sessionDuration"`
 	}
 
 	err := value.Decode(&tmp)
@@ -155,6 +157,7 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	r.Accounts = tmp.Accounts
 	r.Policy = tmp.Policy
 	r.Rules = tmp.Rules
+	r.SessionDuration = tmp.SessionDuration
 
 	// Save the line number
 	r.pos = &FilePosition{

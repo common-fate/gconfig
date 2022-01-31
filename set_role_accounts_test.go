@@ -2,7 +2,6 @@ package gconfig
 
 import (
 	"testing"
-	"time"
 
 	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
 	"github.com/stretchr/testify/assert"
@@ -14,6 +13,7 @@ func TestSetRoleAccounts(t *testing.T) {
     accounts: 
       - "123456789012"
     policy: TEST_POLICY
+    sessionDuration: 8h
   `
 
 	providers := &gconfigv1alpha1.Providers{
@@ -54,10 +54,11 @@ func TestSetRoleRuleAccounts(t *testing.T) {
     accounts: 
       - "123456789012"
     policy: TEST_POLICY
+    sessionDuration: 8h
     rules:
       - policy: allow
         group: developers
-        sessionDuration: 8h
+        
   `
 
 	providers := &gconfigv1alpha1.Providers{
@@ -80,9 +81,8 @@ func TestSetRoleRuleAccounts(t *testing.T) {
 	}
 
 	expected := Rule{
-		Group:           "developers",
-		Policy:          RulePolicyField{Policy: RulePolicyAllow.String(), pos: c.Roles[0].Rules[0].Policy.pos},
-		SessionDuration: 8 * time.Hour,
+		Group:  "developers",
+		Policy: RulePolicyField{Policy: RulePolicyAllow.String(), pos: c.Roles[0].Rules[0].Policy.pos},
 	}
 
 	actual := c.Roles[0].Rules[0]
@@ -96,6 +96,7 @@ func TestSetRoleAccounts_Invalid(t *testing.T) {
     accounts: 
       - "123456789012"
     policy: TEST_POLICY
+    sessionDuration: 8h
   `
 
 	providers := &gconfigv1alpha1.Providers{
@@ -122,6 +123,7 @@ func TestSetRoleAccounts_Alias(t *testing.T) {
     accounts: 
       - "dev"
     policy: TEST_POLICY
+    sessionDuration: 8h
   `
 
 	// an alias "dev" is provided for account ID 123456789012
@@ -165,6 +167,7 @@ func TestSetRoleAccounts_Name(t *testing.T) {
     accounts: 
       - "Develop"
     policy: TEST_POLICY
+    sessionDuration: 8h
   `
 
 	// a name "Develop" is provided for account ID 123456789012
@@ -208,6 +211,7 @@ func TestSetRoleAccounts_ConflictingAliases(t *testing.T) {
     accounts: 
       - "dev"
     policy: TEST_POLICY
+    sessionDuration: 8h
   `
 
 	// multiple accounts have the same "dev" alias. In this case the admin is not allowed to
@@ -243,6 +247,7 @@ func TestSetRoleAccounts_PartialAlias(t *testing.T) {
     accounts: 
       - "aws:dev"
     policy: TEST_POLICY
+    sessionDuration: 8h	
   `
 
 	// an alias "dev" is provided for account ID 123456789012
@@ -286,6 +291,7 @@ func TestSetRoleAccounts_FullWithAlias(t *testing.T) {
     accounts: 
       - "aws:dev:123456789012"
     policy: TEST_POLICY
+    sessionDuration: 8h	
   `
 
 	// an alias "dev" is provided for account ID 123456789012
@@ -329,6 +335,7 @@ func TestSetRoleAccounts_OU(t *testing.T) {
     accounts: 
       - "ou-4w0n-bads234"
     policy: TEST_POLICY
+    sessionDuration: 8h	
   `
 
 	// a name "dev" is provided for account ID 123456789012 and the ou "ou-4w0n-bads234"
@@ -384,6 +391,7 @@ func TestSetRoleAccounts_FullWithAliasOU(t *testing.T) {
     accounts: 
       - "aws:dev:ou-4w0n-bads234"
     policy: TEST_POLICY
+    sessionDuration: 8h	
   `
 
 	// a name "dev" is provided for account ID 123456789012 and the ou "ou-4w0n-bads234"

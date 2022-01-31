@@ -56,12 +56,12 @@ var (
 						ProviderID: "aws",
 					},
 				},
-				Policy: "policy",
+				SessionDuration: time.Hour,
+				Policy:          "policy",
 				Rules: []Rule{
 					{
-						Policy:          RulePolicyField{Policy: RulePolicyAllow.String()},
-						Group:           "test",
-						SessionDuration: time.Hour,
+						Policy: RulePolicyField{Policy: RulePolicyAllow.String()},
+						Group:  "test",
 					},
 				},
 			},
@@ -112,12 +112,12 @@ var (
 						AccountId:  "acc",
 					},
 				},
-				Policy: "policy",
+				SessionDuration: durationpb.New(time.Hour),
+				Policy:          "policy",
 				Rules: []*gconfigv1alpha1.Rule{
 					{
-						Policy:          "allow",
-						Group:           "test",
-						SessionDuration: durationpb.New(time.Hour),
+						Policy: "allow",
+						Group:  "test",
 					},
 				},
 			},
