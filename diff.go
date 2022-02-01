@@ -150,6 +150,9 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 					ID:           id,
 					AlteredField: []string{},
 				}
+				if old.SessionDuration != new.SessionDuration {
+					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "SessionDuration")
+				}
 
 				oldRuleCount := len(old.Rules)
 				newRuleCount := len(new.Rules)
