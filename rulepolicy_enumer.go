@@ -7,9 +7,9 @@ import (
 	"fmt"
 )
 
-const _RulePolicyName = "allowrequireApprovalrequireReason"
+const _RulePolicyName = "allowrequireReasonrequireApproval"
 
-var _RulePolicyIndex = [...]uint8{0, 5, 20, 33}
+var _RulePolicyIndex = [...]uint8{0, 5, 18, 33}
 
 func (i RulePolicy) String() string {
 	i -= 1
@@ -23,8 +23,8 @@ var _RulePolicyValues = []RulePolicy{1, 2, 3}
 
 var _RulePolicyNameToValueMap = map[string]RulePolicy{
 	_RulePolicyName[0:5]:   1,
-	_RulePolicyName[5:20]:  2,
-	_RulePolicyName[20:33]: 3,
+	_RulePolicyName[5:18]:  2,
+	_RulePolicyName[18:33]: 3,
 }
 
 // RulePolicyString retrieves an enum value from the enum constants string name.
