@@ -2,6 +2,7 @@ package gconfig
 
 import (
 	"crypto/x509"
+	"errors"
 	"sort"
 
 	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
@@ -18,10 +19,12 @@ const (
 	RulePolicyRequireApproval                       // requireApproval
 )
 
+var ErrNoRuleMatch error = errors.New("either a matching rule does not exist or you do not have access")
+
 // This function is to be used by all services where there is a need to select a rule to apply from a list of rules
 // For added security, this function takes in the user certificate to ensure that the groups match the rules
 // The certificate should be validated before being used with this method
-func RuleSelector(cert *x509.Certificate, rulesInput []*gconfigv1alpha1.Rule) *gconfigv1alpha1.Rule {
+func RuleSelector(cert *x509.Certificate, rulesInput []*gconfigv1alpha1.Rule) (*gconfigv1alpha1.Rule, error) {
 	admin := false
 	groups := cert.Subject.OrganizationalUnit
 	for _, group := range groups {
@@ -43,7 +46,7 @@ func RuleSelector(cert *x509.Certificate, rulesInput []*gconfigv1alpha1.Rule) *g
 	}
 
 	if len(rules) == 0 {
-		return nil
+		return nil, ErrNoRuleMatch
 	}
 	sort.Slice(rules, func(i, j int) bool {
 		// error should never happen here
@@ -59,5 +62,5 @@ func RuleSelector(cert *x509.Certificate, rulesInput []*gconfigv1alpha1.Rule) *g
 		// uses teh ordering of the ENUM to determin order of rules
 		return a < b
 	})
-	return rules[0]
+	return rules[0], nil
 }
