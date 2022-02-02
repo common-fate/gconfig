@@ -68,3 +68,7 @@ func RuleSelector(cert *x509.Certificate, rulesInput []*gconfigv1alpha1.Rule) (*
 func ReasonRequired(rulePolicy RulePolicy) bool {
 	return rulePolicy > RulePolicyAllow
 }
+
+func ApprovalRequired(rulePolicy RulePolicy) bool {
+	return rulePolicy > RulePolicyRequireReason
+}
