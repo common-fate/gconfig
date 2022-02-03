@@ -211,9 +211,8 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				updatedRole := &UpdateRole{}
 
 				for hash := range newRules {
+					//if we dont find it in the old hash then its new or edited
 					if rule_not_found, ok := oldRules[hash]; !ok {
-						//haven't found rule in old rules do one of the rules has been updated or added
-						//we treat these the same
 						updatedRole = &UpdateRole{
 							ID:           old.ID,
 							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
@@ -222,12 +221,13 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 						break
 
 					}
-					//rule remain unchanged remove rule from new rules
+					//if we find the hash that means this rule has stayed the same
 					delete(oldRules, hash)
 
 				}
 
 				//add all the deleted rules
+				//leftover old rules are deleted
 				for _, rule := range oldRules {
 
 					updatedRole = &UpdateRole{
