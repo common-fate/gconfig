@@ -238,6 +238,9 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 					}
 				}
 
+				//set the updated obj
+				ruleUpdateObj = *updatedRole
+
 				oldAccounts := old.Accounts
 				newAccounts := new.Accounts
 
