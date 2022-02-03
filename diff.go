@@ -210,13 +210,13 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 
 				updatedRole := &UpdateRole{}
 
-				for hash := range newRules {
+				for hash, new_rule := range newRules {
 					//if we dont find it in the old hash then its new or edited
-					if rule_not_found, ok := oldRules[hash]; !ok {
+					if _, ok := oldRules[hash]; !ok {
 						updatedRole = &UpdateRole{
 							ID:           old.ID,
 							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
-							AddRules:     append(ruleUpdateObj.AddRules, AddRule{Group: rule_not_found.group, Policy: rule_not_found.policy}),
+							AddRules:     append(ruleUpdateObj.AddRules, AddRule{Group: new_rule.group, Policy: new_rule.policy}),
 						}
 						break
 
