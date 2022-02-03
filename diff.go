@@ -48,12 +48,14 @@ type UpdateRole struct {
 }
 
 type AddRule struct {
-	Group  string
-	Policy string
+	Group      string
+	Policy     string
+	Breakglass bool
 }
 type DeleteRule struct {
-	Group  string
-	Policy string
+	Group      string
+	Policy     string
+	Breakglass bool
 }
 
 type ErrNoInPlaceUpdates struct {
@@ -81,9 +83,9 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 		IsAdmin bool
 	}
 	type ruleDetails struct {
-		policy string
-		group  string
-		//sessionDuration string
+		policy     string
+		group      string
+		Breakglass bool
 	}
 
 	oldUsersToDelete := make(map[string]userDetails)
@@ -198,13 +200,13 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 
 				for _, rule := range old.Rules {
 					hash := sha256.Sum256([]byte(rule.Policy.Policy + rule.Group))
-					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy}
+					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass}
 
 				}
 
 				for _, rule := range new.Rules {
 					hash := sha256.Sum256([]byte(rule.Policy.Policy + rule.Group))
-					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy}
+					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass}
 
 				}
 
@@ -216,7 +218,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 						updatedRole = &UpdateRole{
 							ID:           old.ID,
 							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
-							AddRules:     append(updatedRole.AddRules, AddRule{Group: new_rule.group, Policy: new_rule.policy}),
+							AddRules:     append(updatedRole.AddRules, AddRule{Group: new_rule.group, Policy: new_rule.policy, Breakglass: new_rule.Breakglass}),
 						}
 
 					} else {
@@ -234,7 +236,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 						ID:           old.ID,
 						AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
 						AddRules:     updatedRole.AddRules,
-						DeleteRules:  append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy}),
+						DeleteRules:  append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy, Breakglass: rule.Breakglass}),
 					}
 				}
 
