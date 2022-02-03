@@ -233,7 +233,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 					updatedRole = &UpdateRole{
 						ID:           old.ID,
 						AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
-						AddRules:     ruleUpdateObj.AddRules,
+						AddRules:     updatedRole.AddRules,
 						DeleteRules:  append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy}),
 					}
 				}
