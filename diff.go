@@ -208,33 +208,34 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 
 				}
 
+				updatedRole := &UpdateRole{}
+
 				for hash := range newRules {
 					if rule_not_found, ok := oldRules[hash]; !ok {
 						//haven't found rule in old rules do one of the rules has been updated or added
 						//we treat these the same
-						ch.UpdateRoles = append(ch.UpdateRoles, UpdateRole{
+						updatedRole = &UpdateRole{
 							ID:           old.ID,
 							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
 							AddRules:     append(ruleUpdateObj.AddRules, AddRule{Group: rule_not_found.group, Policy: rule_not_found.policy}),
-						})
+						}
+						break
 
 					}
-					// else {
-					// 	//rule remain unchanged remove rule from new rules
-					// 	delete(oldRules, hash)
+					//rule remain unchanged remove rule from new rules
+					delete(oldRules, hash)
 
-					// }
 				}
 
 				//add all the deleted rules
 				for _, rule := range oldRules {
 
-					ch.UpdateRoles = append(ch.UpdateRoles, UpdateRole{
+					updatedRole = &UpdateRole{
 						ID:           old.ID,
 						AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
 						AddRules:     ruleUpdateObj.AddRules,
 						DeleteRules:  append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy}),
-					})
+					}
 				}
 
 				oldAccounts := old.Accounts
