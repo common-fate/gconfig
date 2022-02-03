@@ -1,6 +1,7 @@
 package gconfig
 
 import (
+	"crypto/sha256"
 	"fmt"
 )
 
@@ -41,6 +42,18 @@ type UpdateRole struct {
 	ID string
 	// String describing what field changed
 	AlteredField []string // @TODO: potentially make into enum?
+
+	AddRules    []AddRule
+	DeleteRules []DeleteRule
+}
+
+type AddRule struct {
+	Group  string
+	Policy string
+}
+type DeleteRule struct {
+	Group  string
+	Policy string
 }
 
 type ErrNoInPlaceUpdates struct {
@@ -66,6 +79,11 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 	// 3. update a user (change them from a user to an admin, or vice versa)
 	type userDetails struct {
 		IsAdmin bool
+	}
+	type ruleDetails struct {
+		policy string
+		group  string
+		//sessionDuration string
 	}
 
 	oldUsersToDelete := make(map[string]userDetails)
@@ -168,6 +186,56 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				}
 
 				// @TODO add diff checking for rules on roles
+
+				//loop through old rules and hash the combination of policy+group+sessionduration
+				//Make that the key of the map
+				//Do the same with the new rules
+				//loop through new rules and key the old rules with the hash of each -> if doesnt exist: create new rule
+				//If we find a difference add altered field
+
+				oldRules := make(map[[32]byte]ruleDetails)
+				newRules := make(map[[32]byte]ruleDetails)
+
+				for _, rule := range old.Rules {
+					hash := sha256.Sum256([]byte(rule.Policy.Policy + rule.Group))
+					oldRules[hash] = ruleDetails{}
+
+				}
+
+				for _, rule := range new.Rules {
+					hash := sha256.Sum256([]byte(rule.Policy.Policy + rule.Group))
+					newRules[hash] = ruleDetails{}
+
+				}
+
+				for hash, ru := range newRules {
+					if rule_not_found, ok := oldRules[hash]; !ok {
+						//haven't found rule in old rules do one of the rules has been updated or added
+						//we treat these the same
+						ch.UpdateRoles = append(ch.UpdateRoles, UpdateRole{
+							ID:           old.ID,
+							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
+							AddRules:     append(ruleUpdateObj.AddRules, AddRule{Group: rule_not_found.group, Policy: rule_not_found.policy}),
+						})
+
+					}
+					else {
+						//rule remain unchanged remove rule from new rules
+						delete(oldRules, hash)
+
+					}
+				}
+
+				//add all the deleted rules
+				for _, rule := range(oldRules) {
+
+					ch.UpdateRoles = append(ch.UpdateRoles, UpdateRole{
+							ID:           old.ID,
+							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
+							AddRules:     ruleUpdateObj.AddRules,
+							DeleteRules: append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy}),
+						})
+				}
 
 				oldAccounts := old.Accounts
 				newAccounts := new.Accounts
