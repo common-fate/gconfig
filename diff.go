@@ -187,7 +187,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 
 				// @TODO add diff checking for rules on roles
 
-				//loop through old rules and hash the combination of policy+group+sessionduration
+				//loop through old rules and hash the combination of policy+group
 				//Make that the key of the map
 				//Do the same with the new rules
 				//loop through new rules and key the old rules with the hash of each -> if doesnt exist: create new rule
@@ -238,7 +238,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 					}
 				}
 
-				//set the updated obj
+				//set
 				ruleUpdateObj = *updatedRole
 
 				oldAccounts := old.Accounts
