@@ -216,9 +216,10 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 						updatedRole = &UpdateRole{
 							ID:           old.ID,
 							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
-							AddRules:     append(updatedRole.AddRules, AddRule{Group: new_rule.group, Policy: new_rule.policy}),
+							AddRules:     append(updatedRole.AddRules, {Group: new_rule.group, Policy: new_rule.policy}),
 						}
-						break
+						continue
+						
 
 					}
 					//if we find the hash that means this rule has stayed the same
