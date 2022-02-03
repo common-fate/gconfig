@@ -198,17 +198,17 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 
 				for _, rule := range old.Rules {
 					hash := sha256.Sum256([]byte(rule.Policy.Policy + rule.Group))
-					oldRules[hash] = ruleDetails{}
+					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy}
 
 				}
 
 				for _, rule := range new.Rules {
 					hash := sha256.Sum256([]byte(rule.Policy.Policy + rule.Group))
-					newRules[hash] = ruleDetails{}
+					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy}
 
 				}
 
-				for hash, ru := range newRules {
+				for hash := range newRules {
 					if rule_not_found, ok := oldRules[hash]; !ok {
 						//haven't found rule in old rules do one of the rules has been updated or added
 						//we treat these the same
@@ -219,22 +219,22 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 						})
 
 					}
-					else {
-						//rule remain unchanged remove rule from new rules
-						delete(oldRules, hash)
+					// else {
+					// 	//rule remain unchanged remove rule from new rules
+					// 	delete(oldRules, hash)
 
-					}
+					// }
 				}
 
 				//add all the deleted rules
-				for _, rule := range(oldRules) {
+				for _, rule := range oldRules {
 
 					ch.UpdateRoles = append(ch.UpdateRoles, UpdateRole{
-							ID:           old.ID,
-							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
-							AddRules:     ruleUpdateObj.AddRules,
-							DeleteRules: append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy}),
-						})
+						ID:           old.ID,
+						AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
+						AddRules:     ruleUpdateObj.AddRules,
+						DeleteRules:  append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy}),
+					})
 				}
 
 				oldAccounts := old.Accounts
