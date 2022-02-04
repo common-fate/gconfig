@@ -2,6 +2,7 @@ package gconfig
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -129,14 +130,17 @@ func TestUpdateRoleDiff(t *testing.T) {
 						Policy: RulePolicyField{Policy: RulePolicyAllow.String()},
 					},
 				},
+				SessionDuration: time.Hour,
 			},
 			{
-				ID:       "dev",
-				Accounts: []string{"123456789012", "123456789013"},
+				ID:              "dev",
+				Accounts:        []string{"123456789012", "123456789013"},
+				SessionDuration: time.Hour,
 			},
 			{
-				ID:       "dev2",
-				Accounts: []string{"123456789012", "123456789013"},
+				ID:              "dev2",
+				Accounts:        []string{"123456789012", "123456789013"},
+				SessionDuration: time.Hour,
 			},
 		},
 	}
@@ -147,16 +151,19 @@ func TestUpdateRoleDiff(t *testing.T) {
 	new := Config{
 		Roles: []*Role{
 			{
-				ID:       "admin",
-				Accounts: []string{"123456789013"},
+				ID:              "admin",
+				Accounts:        []string{"123456789013"},
+				SessionDuration: time.Hour,
 			},
 			{
-				ID:       "dev",
-				Accounts: []string{"123456789012", "123456789013"},
+				ID:              "dev",
+				Accounts:        []string{"123456789012", "123456789013"},
+				SessionDuration: time.Hour,
 			},
 			{
-				ID:       "dev3",
-				Accounts: []string{"123456789012", "123456789013"},
+				ID:              "dev3",
+				Accounts:        []string{"123456789012", "123456789013"},
+				SessionDuration: time.Hour,
 			},
 		},
 	}
@@ -170,7 +177,11 @@ func TestUpdateRoleDiff(t *testing.T) {
 		UpdateRoles: []UpdateRole{
 			{
 				ID:           "admin",
-				AlteredField: []string{"Rules", "Accounts"},
+				AlteredField: []string{"Rules", "Rules", "Accounts"},
+
+				AddRules: nil,
+
+				DeleteRules: []DeleteRule{{Group: "", Policy: "allow", Breakglass: false}},
 			},
 		},
 		DeleteRoles: []string{"dev2"},

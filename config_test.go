@@ -36,20 +36,20 @@ func Test_PolicyValidated(t *testing.T) {
 	rule1 := `    rules:
     - policy: badPolicyName
       group: developers
-      sessionDuration: 8h`
+     `
 	cf := b
 	_, err = parseContents("configtest.yaml", append(cf, []byte(rule1)...), &gconfigv1alpha1.Providers{})
 	policyValues := []string{}
 	for _, pol := range RulePolicyValues() {
 		policyValues = append(policyValues, pol.String())
 	}
-	expected := fmt.Sprintf("configtest.yaml:30:15: policy: badPolicyName must be one of %v", policyValues)
+	expected := fmt.Sprintf("configtest.yaml:33:15: policy: badPolicyName must be one of %v", policyValues)
 	assert.EqualError(t, err, expected)
 
 	rule2 := `    rules:
     - policy: requireApproval
       group: developers
-      sessionDuration: 8h`
+      `
 
 	cf = b
 	providers := &gconfigv1alpha1.Providers{Providers: []*gconfigv1alpha1.Provider{
@@ -76,7 +76,7 @@ func Test_PolicyValidated(t *testing.T) {
 	cf = b
 	_, err = parseContents("configtest.yaml", append(cf, []byte(rule3)...), providers)
 
-	expected = "configtest.yaml:30:15: 'breakglass: true' can only be used on policies which require approval"
+	expected = "configtest.yaml:33:15: 'breakglass: true' can only be used on policies which require approval"
 	assert.EqualError(t, err, expected)
 
 	rule4 := `    rules:
