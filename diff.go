@@ -187,8 +187,6 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Rules")
 				}
 
-				// @TODO add diff checking for rules on roles
-
 				//loop through old rules and hash the combination of policy+group
 				//Make that the key of the map
 				//Do the same with the new rules
