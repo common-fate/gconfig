@@ -65,9 +65,22 @@ func (c *Config) setRoleAccounts() error {
 				// an account in the format <provider>:<alias>:<accountId> we can use the account id directly
 				accountId = accountPieces[2]
 			} else {
+				// if its 2 parts or its not an accountid it must be an alias
 				if numberOfPieces == 2 || !(IsStringAnAWSAccountID(a) || IsStringAnAWSOUID(a)) {
 					alias := a
 					if numberOfPieces == 2 {
+						providerExists := false
+						for _, p := range c.providers.Providers {
+							if p.Id == accountPieces[0] {
+								providerExists = true
+								break
+							}
+						}
+						if !providerExists {
+							err := fmt.Errorf("role %s references a provider that doesn't exist: %s \naccount must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, accountPieces[0])
+							err = printLintError(r, err)
+							return err
+						}
 						alias = accountPieces[1]
 					}
 					// it must be an alias
@@ -79,15 +92,35 @@ func (c *Config) setRoleAccounts() error {
 						return err
 					}
 					if len(aliasAccounts) > 1 {
-						err := generateAmbiguousAliasError(r, a, alias, aliasAccounts)
-						err = printLintError(r, err)
-						return err
+						if numberOfPieces == 2 {
+							pacc := []accountAndProvider{}
+							for _, ac := range aliasAccounts {
+								if ac.Provider.Id == accountPieces[0] {
+									pacc = append(pacc, ac)
+								}
+							}
+							if len(pacc) > 1 {
+								err := generateAmbiguousAliasError(r, a, alias, pacc)
+								err = printLintError(r, err)
+								return err
+							} else if len(pacc) == 1 {
+								accountId = pacc[0].Account.Id
+							} else {
+								err := fmt.Errorf("role %s references an account alias that doesn't exist for this provider: %s \naccount must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, a)
+								err = printLintError(r, err)
+								return err
+							}
 
+						} else {
+							err := generateAmbiguousAliasError(r, a, alias, aliasAccounts)
+							err = printLintError(r, err)
+							return err
+						}
+					} else {
+						// only one alias macthes so we use that as the account
+						accountId = aliasAccounts[0].Account.Id
 					}
-					// only one alias macthes so we use that as the account
-					accountId = aliasAccounts[0].Account.Id
 				}
-
 			}
 			ap, ok := accountMap[accountId]
 			if !ok {
