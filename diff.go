@@ -1,6 +1,7 @@
 package gconfig
 
 import (
+	"crypto/sha256"
 	"fmt"
 )
 
@@ -41,6 +42,20 @@ type UpdateRole struct {
 	ID string
 	// String describing what field changed
 	AlteredField []string // @TODO: potentially make into enum?
+
+	AddRules    []AddRule
+	DeleteRules []DeleteRule
+}
+
+type AddRule struct {
+	Group      string
+	Policy     string
+	Breakglass bool
+}
+type DeleteRule struct {
+	Group      string
+	Policy     string
+	Breakglass bool
 }
 
 type ErrNoInPlaceUpdates struct {
@@ -66,6 +81,11 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 	// 3. update a user (change them from a user to an admin, or vice versa)
 	type userDetails struct {
 		IsAdmin bool
+	}
+	type ruleDetails struct {
+		policy     string
+		group      string
+		Breakglass bool
 	}
 
 	oldUsersToDelete := make(map[string]userDetails)
@@ -167,7 +187,59 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Rules")
 				}
 
-				// @TODO add diff checking for rules on roles
+				//loop through old rules and hash the combination of policy+group
+				//Make that the key of the map
+				//Do the same with the new rules
+				//loop through new rules and key the old rules with the hash of each -> if doesnt exist: create new rule
+				//If we find a difference add altered field
+
+				oldRules := make(map[[32]byte]ruleDetails)
+				newRules := make(map[[32]byte]ruleDetails)
+
+				for _, rule := range old.Rules {
+					hash := sha256.Sum256([]byte(rule.Policy.Policy + rule.Group))
+					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass}
+
+				}
+
+				for _, rule := range new.Rules {
+					hash := sha256.Sum256([]byte(rule.Policy.Policy + rule.Group))
+					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass}
+
+				}
+
+				updatedRole := &UpdateRole{}
+
+				for hash, new_rule := range newRules {
+					//if we dont find it in the old hash then its new or edited
+					if _, ok := oldRules[hash]; !ok {
+						updatedRole = &UpdateRole{
+							ID:           old.ID,
+							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
+							AddRules:     append(updatedRole.AddRules, AddRule{Group: new_rule.group, Policy: new_rule.policy, Breakglass: new_rule.Breakglass}),
+						}
+
+					} else {
+						//if we find the hash that means this rule has stayed the same
+						delete(oldRules, hash)
+					}
+
+				}
+
+				//add all the deleted rules
+				//leftover old rules are deleted
+				for _, rule := range oldRules {
+
+					updatedRole = &UpdateRole{
+						ID:           old.ID,
+						AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
+						AddRules:     updatedRole.AddRules,
+						DeleteRules:  append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy, Breakglass: rule.Breakglass}),
+					}
+				}
+
+				//set
+				ruleUpdateObj = *updatedRole
 
 				oldAccounts := old.Accounts
 				newAccounts := new.Accounts

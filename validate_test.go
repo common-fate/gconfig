@@ -84,8 +84,9 @@ func TestValidAccounts(t *testing.T) {
   - id: test
     accounts: 
       - "123456789012"
-    policy: TEST_POLICY
-`
+    sessionDuration: 2h
+    policy: TEST_POLICY`
+
 	providers := &gconfigv1alpha1.Providers{
 		Providers: []*gconfigv1alpha1.Provider{
 			{
@@ -128,4 +129,3 @@ groups:
 	errs := c.Validate()
 	assert.Equal(t, "a group called `granted:administrators` cannot be created. Please choose a different name", errs.Error())
 }
-

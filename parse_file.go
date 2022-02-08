@@ -48,6 +48,12 @@ func parseContents(filename string, in []byte, providers *gconfigv1alpha1.Provid
 
 	for _, r := range c.Roles {
 		r.pos.Filename = filename
+		//validate the role has a session duration
+		if r.SessionDuration <= 0 {
+			err = fmt.Errorf("session required on each role")
+			err = printLintError(r, err)
+			return nil, err
+		}
 		for _, rule := range r.Rules {
 			rule.Policy.pos.Filename = filename
 			// Validates that the rule policy matches a supported policy type

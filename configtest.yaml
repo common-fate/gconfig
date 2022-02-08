@@ -26,3 +26,6 @@ roles:
           }
         ]
       }
+    sessionDuration: 2h
+    
+     
