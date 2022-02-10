@@ -30,6 +30,7 @@ type accountYAML struct {
 	ID       string        `yaml:"id"`
 	Name     *string       `yaml:"name,omitempty"`
 	Type     string        `yaml:"type"`
+	Aliases  []string      `yaml:aliases`
 	Accounts []accountYAML `yaml:"accounts,omitempty"`
 }
 
@@ -97,6 +98,10 @@ func buildAccountYAML(a *gconfigv1alpha1.Account) accountYAML {
 
 	if a.Name != "" {
 		ayaml.Name = &a.Name
+	}
+
+	if len(a.Aliases) > 0 {
+		ayaml.Aliases = a.Aliases
 	}
 
 	for _, child := range a.Children {
