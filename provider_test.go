@@ -49,6 +49,7 @@ providers:
       - id: "123456789012"
         name: test
         type: AWS::Account
+        aliases: []
 `
 	assert.Equal(t, expected, string(res))
 
