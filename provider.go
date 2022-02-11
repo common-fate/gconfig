@@ -30,7 +30,7 @@ type accountYAML struct {
 	ID       string        `yaml:"id"`
 	Name     *string       `yaml:"name,omitempty"`
 	Type     string        `yaml:"type"`
-	Aliases  []string      `yaml:aliases`
+	Aliases  []string      `yaml:"aliases"`
 	Accounts []accountYAML `yaml:"accounts,omitempty"`
 }
 
