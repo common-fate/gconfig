@@ -47,6 +47,9 @@ func ProvidersToYAML(p *gconfigv1alpha1.Provider) ([]byte, error) {
 	case *gconfigv1alpha1.Provider_Aws:
 		pyaml.ManagementAccountID = &v.Aws.OrgManagementAccountId
 		pyaml.Type = "aws"
+	case *gconfigv1alpha1.Provider_AwsSso:
+		pyaml.ManagementAccountID = &v.AwsSso.OrgManagementAccountId
+		pyaml.Type = "awsSSO"
 	default:
 		return nil, fmt.Errorf("unhandled provider type %s", reflect.TypeOf(p.Details))
 	}

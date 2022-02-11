@@ -32,10 +32,15 @@ message Provider {
   repeated AccessHandler access_handlers = 4;
   oneof details {
     AWSProviderDetails aws = 5;
+    AWSSSOProviderDetails aws_sso = 6;
   }
 }
 
 message AWSProviderDetails {
+  string org_management_account_id = 1;
+}
+
+message AWSSSOProviderDetails {
   string org_management_account_id = 1;
 }
 
