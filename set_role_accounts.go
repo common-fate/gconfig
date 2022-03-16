@@ -46,8 +46,15 @@ func (c *Config) setRoleAccounts() error {
 	accountMap := make(map[string]accountAndProvider)
 	aliasMap := make(map[string][]accountAndProvider)
 	for _, p := range c.providers.Providers {
-		for _, acc := range p.Accounts {
-			collectAccountAndProvider(acc, p, accountMap, aliasMap)
+		switch v := p.Details.(type) {
+		case *gconfigv1alpha1.Provider_Aws:
+			for _, acc := range v.Aws.Accounts {
+				collectAccountAndProvider(acc, p, accountMap, aliasMap)
+			}
+		case *gconfigv1alpha1.Provider_AwsSso:
+			for _, acc := range v.AwsSso.Accounts {
+				collectAccountAndProvider(acc, p, accountMap, aliasMap)
+			}
 		}
 	}
 
@@ -198,8 +205,15 @@ func MatchAccountOrAlias(providers []*gconfigv1alpha1.Provider, accountInput str
 	accountMap := make(map[string]accountAndProvider)
 	aliasMap := make(map[string][]accountAndProvider)
 	for _, p := range providers {
-		for _, acc := range p.Accounts {
-			collectAccountAndProvider(acc, p, accountMap, aliasMap)
+		switch v := p.Details.(type) {
+		case *gconfigv1alpha1.Provider_Aws:
+			for _, acc := range v.Aws.Accounts {
+				collectAccountAndProvider(acc, p, accountMap, aliasMap)
+			}
+		case *gconfigv1alpha1.Provider_AwsSso:
+			for _, acc := range v.AwsSso.Accounts {
+				collectAccountAndProvider(acc, p, accountMap, aliasMap)
+			}
 		}
 	}
 

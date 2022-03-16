@@ -28,20 +28,23 @@ message Providers {
 message Provider {
   string id = 1;
   string name = 2;
-  repeated Account accounts = 3;
   repeated AccessHandler access_handlers = 4;
   oneof details {
     AWSProviderDetails aws = 5;
     AWSSSOProviderDetails aws_sso = 6;
+    OktaProviderDetails okta = 7;
   }
 }
-
+message OktaProviderDetails {
+}
 message AWSProviderDetails {
   string org_management_account_id = 1;
+  repeated Account accounts = 2;
 }
 
 message AWSSSOProviderDetails {
   string org_management_account_id = 1;
+  repeated Account accounts = 2;
 }
 
 message AccessHandler {
@@ -59,13 +62,18 @@ message Account {
   repeated string aliases = 4;
   repeated Account children = 5;
 }
-
+enum RoleType {
+  ROLE_TYPE_AWS = 0;
+  ROLE_TYPE_OKTA = 1;
+}
 message Role {
   string id = 1;
   repeated RoleAccount accounts = 2;
   string policy = 3;
   repeated Rule rules = 4;
   google.protobuf.Duration session_duration = 5;
+  RoleType type = 6;
+  string group = 7;
 }
 
 // RoleAccount is a binding of a role to an Account

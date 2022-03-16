@@ -47,16 +47,19 @@ func ProvidersToYAML(p *gconfigv1alpha1.Provider) ([]byte, error) {
 	case *gconfigv1alpha1.Provider_Aws:
 		pyaml.ManagementAccountID = &v.Aws.OrgManagementAccountId
 		pyaml.Type = "aws"
+		for _, acc := range v.Aws.Accounts {
+			ayaml := buildAccountYAML(acc)
+			pyaml.Accounts = append(pyaml.Accounts, ayaml)
+		}
 	case *gconfigv1alpha1.Provider_AwsSso:
 		pyaml.ManagementAccountID = &v.AwsSso.OrgManagementAccountId
 		pyaml.Type = "awsSSO"
+		for _, acc := range v.AwsSso.Accounts {
+			ayaml := buildAccountYAML(acc)
+			pyaml.Accounts = append(pyaml.Accounts, ayaml)
+		}
 	default:
 		return nil, fmt.Errorf("unhandled provider type %s", reflect.TypeOf(p.Details))
-	}
-
-	for _, acc := range p.Accounts {
-		ayaml := buildAccountYAML(acc)
-		pyaml.Accounts = append(pyaml.Accounts, ayaml)
 	}
 
 	for _, ah := range p.AccessHandlers {

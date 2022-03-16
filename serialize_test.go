@@ -15,12 +15,12 @@ var (
 			Providers: []*gconfigv1alpha1.Provider{
 				{
 					Id: "aws",
-					Accounts: []*gconfigv1alpha1.Account{
+					Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 						{
 							Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 							Id:   "acc",
 						},
-					},
+					}}},
 				},
 			},
 		},
