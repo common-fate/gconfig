@@ -1,11 +1,11 @@
-package gconfig
+package gcoktav1alpha1
 
 import (
 	"crypto/x509"
 	"errors"
 	"sort"
 
-	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
+	pbgcoktav1alpha1 "github.com/common-fate/gconfig/gen/gconfig/okta/v1alpha1"
 )
 
 type RulePolicy int
@@ -24,7 +24,7 @@ var ErrNoRuleMatch error = errors.New("either a matching rule does not exist or 
 // This function is to be used by all services where there is a need to select a rule to apply from a list of rules
 // For added security, this function takes in the user certificate to ensure that the groups match the rules
 // The certificate should be validated before being used with this method
-func RuleSelector(cert *x509.Certificate, rulesInput []*gconfigv1alpha1.Rule) (*gconfigv1alpha1.Rule, error) {
+func RuleSelector(cert *x509.Certificate, rulesInput []*pbgcoktav1alpha1.Rule) (*pbgcoktav1alpha1.Rule, error) {
 	admin := false
 	groups := cert.Subject.OrganizationalUnit
 	for _, group := range groups {
@@ -32,7 +32,7 @@ func RuleSelector(cert *x509.Certificate, rulesInput []*gconfigv1alpha1.Rule) (*
 			admin = true
 		}
 	}
-	rules := []*gconfigv1alpha1.Rule{}
+	rules := []*pbgcoktav1alpha1.Rule{}
 	if admin {
 		rules = rulesInput
 	} else {

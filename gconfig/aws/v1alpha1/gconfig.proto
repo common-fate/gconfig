@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package gconfig.v1alpha1;
+package gconfig.aws.v1alpha1;
 import "google/protobuf/duration.proto";
 
 message Config {
@@ -66,6 +66,8 @@ message Role {
   string policy = 3;
   repeated Rule rules = 4;
   google.protobuf.Duration session_duration = 5;
+  string type = 6;
+  string group = 7;
 }
 
 // RoleAccount is a binding of a role to an Account

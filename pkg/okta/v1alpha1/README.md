@@ -17,9 +17,9 @@ To deserialize a Config from binary, run:
 
 ```go
 // load `b` []byte from a database, or somewhere else
-providers := &gconfigv1alpha1.Providers{} // providers must be provided separately to rehydrate the config
+providers := &pbgcoktav1alpha1.Providers{} // providers must be provided separately to rehydrate the config
 
-var pb gconfigv1alpha1.Config
+var pb pbgcoktav1alpha1.Config
 err = proto.Unmarshal(b, &pb)
 c := FromProtobuf(&pb, providers)
 ```

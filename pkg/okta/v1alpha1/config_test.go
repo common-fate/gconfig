@@ -1,11 +1,10 @@
-package gconfig
+package gcoktav1alpha1
 
 import (
 	"fmt"
 	"io/ioutil"
 	"testing"
 
-	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )
@@ -38,7 +37,7 @@ func Test_PolicyValidated(t *testing.T) {
       group: developers
      `
 	cf := b
-	_, err = parseContents("configtest.yaml", append(cf, []byte(rule1)...), &gconfigv1alpha1.Providers{})
+	_, err = parseContents("configtest.yaml", append(cf, []byte(rule1)...))
 	policyValues := []string{}
 	for _, pol := range RulePolicyValues() {
 		policyValues = append(policyValues, pol.String())
@@ -52,18 +51,8 @@ func Test_PolicyValidated(t *testing.T) {
       `
 
 	cf = b
-	providers := &gconfigv1alpha1.Providers{Providers: []*gconfigv1alpha1.Provider{
-		{
-			Id: "aws",
-			Accounts: []*gconfigv1alpha1.Account{
-				{
-					Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
-					Id:   "123456789012",
-				},
-			},
-		},
-	}}
-	c, err := parseContents("configtest.yaml", append(cf, []byte(rule2)...), providers)
+
+	c, err := parseContents("configtest.yaml", append(cf, []byte(rule2)...))
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	assert.Equal(t, c.Roles[0].Rules[0].Policy.Policy, RulePolicyRequireApproval.String())
@@ -74,7 +63,7 @@ func Test_PolicyValidated(t *testing.T) {
       group: developers
       sessionDuration: 8h`
 	cf = b
-	_, err = parseContents("configtest.yaml", append(cf, []byte(rule3)...), providers)
+	_, err = parseContents("configtest.yaml", append(cf, []byte(rule3)...))
 
 	expected = "configtest.yaml:33:15: 'breakglass: true' can only be used on policies which require approval"
 	assert.EqualError(t, err, expected)
@@ -87,7 +76,7 @@ func Test_PolicyValidated(t *testing.T) {
 
 	cf = b
 
-	c, err = parseContents("configtest.yaml", append(cf, []byte(rule4)...), providers)
+	c, err = parseContents("configtest.yaml", append(cf, []byte(rule4)...))
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
 	assert.Equal(t, c.Roles[0].Rules[0].Policy.Policy, RulePolicyRequireApproval.String())

@@ -1,4 +1,4 @@
-package gconfig
+package gcoktav1alpha1
 
 import (
 	"crypto/sha256"
@@ -91,18 +91,10 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 	oldUsersToDelete := make(map[string]userDetails)
 	allNewUsers := make(map[string]userDetails)
 
-	for _, u := range old.Users {
-		oldUsersToDelete[u.Email] = userDetails{IsAdmin: false}
-	}
-
 	for _, u := range old.Admins {
 		oldUsersToDelete[u.Email] = userDetails{IsAdmin: true}
 	}
 
-	// combine admins and users into one list
-	for _, u := range c.Users {
-		allNewUsers[u.Email] = userDetails{IsAdmin: false}
-	}
 	for _, u := range c.Admins {
 		allNewUsers[u.Email] = userDetails{IsAdmin: true}
 	}
@@ -170,17 +162,9 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 					ID:           id,
 					AlteredField: []string{},
 				}
-				if old.SessionDuration != new.SessionDuration {
-					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "SessionDuration")
-				}
 
 				oldRuleCount := len(old.Rules)
 				newRuleCount := len(new.Rules)
-
-				// If there's a policy difference
-				if old.Policy != new.Policy {
-					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Policy")
-				}
 
 				// If there's a rule count difference
 				if oldRuleCount != newRuleCount {
@@ -240,55 +224,6 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 
 				//set
 				ruleUpdateObj = *updatedRole
-
-				oldAccounts := old.Accounts
-				newAccounts := new.Accounts
-
-				// Examples
-				// old: 0123456789012, 0123456789013
-				// new: 0123456789012, 0123456789013, 0123456789014
-
-				// iterate through the old accounts,
-				// if the account is not in the new accounts,
-				// then it has been deleted
-				match := true
-				for _, oldAccount := range oldAccounts {
-					for _, newAccount := range newAccounts {
-						if oldAccount == newAccount {
-							match = true
-							break
-						} else {
-							match = false
-						}
-					}
-					if !match {
-						break
-					}
-				}
-				if !match {
-					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Accounts")
-				}
-
-				// iterate through the new accounts,
-				// if the account is not in the old accounts,
-				// then it has been added
-				match = true
-				for _, newAccount := range newAccounts {
-					for _, oldAccount := range oldAccounts {
-						if newAccount == oldAccount {
-							match = true
-							break
-						} else {
-							match = false
-						}
-					}
-					if !match {
-						break
-					}
-				}
-				if !match {
-					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Accounts")
-				}
 
 				// @TODO: Support deep rule diffing...
 

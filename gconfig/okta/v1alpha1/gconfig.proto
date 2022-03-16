@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package gconfig.okta.v1alpha1;
+
+message Config {
+  repeated Member admins = 1;
+  repeated Role roles = 2;
+  AccessHandler accessHandler = 3;
+}
+
+message Member {
+  string email = 1;
+}
+
+message AccessHandler {
+  string url = 1;
+}
+
+
+message Role {
+  string id = 1;
+  string group = 2;
+  repeated Rule rules = 3;
+  
+}
+
+message Rule {
+  string policy = 1;
+  string group = 2;
+  bool breakglass = 3;
+}
