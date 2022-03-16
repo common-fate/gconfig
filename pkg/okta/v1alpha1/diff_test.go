@@ -85,7 +85,7 @@ func TestUpdateRoleDiff(t *testing.T) {
 		UpdateRoles: []UpdateRole{
 			{
 				ID:           "admin",
-				AlteredField: []string{"Rules", "Rules", "Accounts"},
+				AlteredField: []string{"Rules", "Rules"},
 
 				AddRules: nil,
 
