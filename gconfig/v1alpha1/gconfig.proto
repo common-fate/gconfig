@@ -81,6 +81,7 @@ message Role {
 message RoleAccount {
   string provider_id = 1;
   string account_id = 2;
+  string alias = 3;
 }
 
 message Rule {
