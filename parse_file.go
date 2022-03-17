@@ -48,8 +48,25 @@ func parseContents(filename string, in []byte, providers *gconfigv1alpha1.Provid
 
 	for _, r := range c.Roles {
 		r.pos.Filename = filename
+		if r.Type == "" {
+			keys := make([]string, 0, len(gconfigv1alpha1.RoleType_value))
+			for k := range gconfigv1alpha1.RoleType_value {
+				keys = append(keys, k)
+			}
+			err = fmt.Errorf("type required on each role. Valid types: %v", keys)
+			err = printLintError(r, err)
+			return nil, err
+		} else if _, ok := gconfigv1alpha1.RoleType_value[r.Type]; !ok {
+			keys := make([]string, 0, len(gconfigv1alpha1.RoleType_value))
+			for k := range gconfigv1alpha1.RoleType_value {
+				keys = append(keys, k)
+			}
+			err = fmt.Errorf("invalid type on role. Valid types: %v", keys)
+			err = printLintError(r, err)
+			return nil, err
+		}
 		//validate the role has a session duration
-		isOktaRole := r.Type != gconfigv1alpha1.RoleType_ROLE_TYPE_OKTA.String()
+		isOktaRole := r.Type == gconfigv1alpha1.RoleType_ROLE_TYPE_OKTA.String()
 		if isOktaRole {
 			if r.Group == "" {
 				err = fmt.Errorf("group required on each role")

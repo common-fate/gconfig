@@ -10,6 +10,7 @@ import (
 func TestSetRoleAccounts(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
       - "123456789012"
     policy: TEST_POLICY
@@ -51,6 +52,7 @@ func TestSetRoleAccounts(t *testing.T) {
 func TestSetRoleRuleAccounts(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
       - "123456789012"
     policy: TEST_POLICY
@@ -93,6 +95,7 @@ func TestSetRoleRuleAccounts(t *testing.T) {
 func TestSetRoleAccounts_Invalid(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
       - "123456789012"
     policy: TEST_POLICY
@@ -120,6 +123,7 @@ func TestSetRoleAccounts_Invalid(t *testing.T) {
 func TestSetRoleAccounts_Alias(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
       - "dev"
     policy: TEST_POLICY
@@ -164,6 +168,7 @@ func TestSetRoleAccounts_Alias(t *testing.T) {
 func TestSetRoleAccounts_Name(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
       - "Develop"
     policy: TEST_POLICY
@@ -208,6 +213,7 @@ func TestSetRoleAccounts_Name(t *testing.T) {
 func TestSetRoleAccounts_ConflictingAliases(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
       - "dev"
     policy: TEST_POLICY
@@ -244,6 +250,7 @@ func TestSetRoleAccounts_ConflictingAliases(t *testing.T) {
 func TestSetRoleAccounts_PartialAlias(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
       - "aws:dev"
     policy: TEST_POLICY
@@ -288,6 +295,7 @@ func TestSetRoleAccounts_PartialAlias(t *testing.T) {
 func TestSetRoleAccounts_FullWithAlias(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
       - "aws:dev:123456789012"
     policy: TEST_POLICY
@@ -332,6 +340,7 @@ func TestSetRoleAccounts_FullWithAlias(t *testing.T) {
 func TestSetRoleAccounts_OU(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
       - "ou-4w0n-bads234"
     policy: TEST_POLICY
@@ -388,6 +397,7 @@ func TestSetRoleAccounts_OU(t *testing.T) {
 func TestSetRoleAccounts_FullWithAliasOU(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
       - "aws:dev:ou-4w0n-bads234"
     policy: TEST_POLICY

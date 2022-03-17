@@ -82,6 +82,7 @@ func TestErrorPrintingNoFilename(t *testing.T) {
 func TestValidAccounts(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
       - "123456789012"
     sessionDuration: 2h

@@ -12,6 +12,7 @@ groups:
       - b@test.com
 roles:
   - id: admin
+    type: ROLE_TYPE_AWS
     audited: true
     accounts:
       - 123456789012
@@ -27,5 +28,3 @@ roles:
         ]
       }
     sessionDuration: 2h
-    
-     
