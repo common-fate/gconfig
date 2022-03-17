@@ -43,7 +43,7 @@ func Test_PolicyValidated(t *testing.T) {
 	for _, pol := range RulePolicyValues() {
 		policyValues = append(policyValues, pol.String())
 	}
-	expected := fmt.Sprintf("configtest.yaml:33:15: policy: badPolicyName must be one of %v", policyValues)
+	expected := fmt.Sprintf("configtest.yaml:32:15: policy: badPolicyName must be one of %v", policyValues)
 	assert.EqualError(t, err, expected)
 
 	rule2 := `    rules:
@@ -55,12 +55,12 @@ func Test_PolicyValidated(t *testing.T) {
 	providers := &gconfigv1alpha1.Providers{Providers: []*gconfigv1alpha1.Provider{
 		{
 			Id: "aws",
-			Accounts: []*gconfigv1alpha1.Account{
+			Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 				{
 					Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 					Id:   "123456789012",
 				},
-			},
+			}}},
 		},
 	}}
 	c, err := parseContents("configtest.yaml", append(cf, []byte(rule2)...), providers)
@@ -76,7 +76,7 @@ func Test_PolicyValidated(t *testing.T) {
 	cf = b
 	_, err = parseContents("configtest.yaml", append(cf, []byte(rule3)...), providers)
 
-	expected = "configtest.yaml:33:15: 'breakglass: true' can only be used on policies which require approval"
+	expected = "configtest.yaml:32:15: 'breakglass: true' can only be used on policies which require approval"
 	assert.EqualError(t, err, expected)
 
 	rule4 := `    rules:

@@ -30,9 +30,15 @@ func (c *Config) Validate() error {
 			return fmt.Errorf("duplicate provider %s", p.Id)
 		}
 		providerMap[p.Id] = p
-
-		for _, acc := range p.Accounts {
-			collectAccount(acc, accountMap)
+		switch v := p.Details.(type) {
+		case *gconfigv1alpha1.Provider_Aws:
+			for _, acc := range v.Aws.Accounts {
+				collectAccount(acc, accountMap)
+			}
+		case *gconfigv1alpha1.Provider_AwsSso:
+			for _, acc := range v.AwsSso.Accounts {
+				collectAccount(acc, accountMap)
+			}
 		}
 	}
 

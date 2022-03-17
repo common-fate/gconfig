@@ -115,6 +115,8 @@ type Role struct {
 	Policy          string        `yaml:"policy"`
 	SessionDuration time.Duration `yaml:"sessionDuration"`
 	Rules           []Rule        `yaml:"rules"`
+	Group           string        `yaml:"group"`
+	Type            string        `yaml:"type"`
 	roleAccounts    []RoleAccount
 	// pos is used for displaying linting errors
 	pos *FilePosition
@@ -146,6 +148,8 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 		Policy          string        `yaml:"policy"`
 		Rules           []Rule        `yaml:"rules"`
 		SessionDuration time.Duration `yaml:"sessionDuration"`
+		Group           string        `yaml:"group"`
+		Type            string        `yaml:"type"`
 	}
 
 	err := value.Decode(&tmp)
@@ -158,6 +162,8 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	r.Policy = tmp.Policy
 	r.Rules = tmp.Rules
 	r.SessionDuration = tmp.SessionDuration
+	r.Type = tmp.Type
+	r.Group = tmp.Group
 
 	// Save the line number
 	r.pos = &FilePosition{

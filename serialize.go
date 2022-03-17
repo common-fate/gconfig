@@ -35,6 +35,8 @@ func (c *Config) SerializeProtobuf() *gconfigv1alpha1.Config {
 			Id:              r.ID,
 			Policy:          r.Policy,
 			SessionDuration: durationpb.New(r.SessionDuration),
+			Group:           r.Group,
+			Type:            gconfigv1alpha1.RoleType(gconfigv1alpha1.RoleType_value[r.Type]),
 		}
 		for _, ra := range r.roleAccounts {
 			role.Accounts = append(role.Accounts, &gconfigv1alpha1.RoleAccount{
@@ -103,6 +105,8 @@ func FromProtobuf(c *gconfigv1alpha1.Config, providers *gconfigv1alpha1.Provider
 			ID:              r.Id,
 			Policy:          r.Policy,
 			SessionDuration: r.SessionDuration.AsDuration(),
+			Group:           r.Group,
+			Type:            r.Type.String(),
 		}
 		for _, ra := range r.Accounts {
 			role.roleAccounts = append(role.roleAccounts, RoleAccount{
