@@ -9,14 +9,14 @@ import (
 
 // Config for Granted.
 type Config struct {
-	Type   string   `yaml:"type"`
-	Admins []Member `yaml:"admins"`
-	Users  []Member `yaml:"users"`
-	Groups []Group  `yaml:"groups"`
-	Roles  []*Role  `yaml:"roles"`
-	Tests  []Test   `yaml:"tests"`
-
-	providers *gconfigv1alpha1.Providers
+	Type              string              `yaml:"type"`
+	Admins            []Member            `yaml:"admins"`
+	Users             []Member            `yaml:"users"`
+	Groups            []Group             `yaml:"groups"`
+	Roles             []*Role             `yaml:"roles"`
+	Tests             []Test              `yaml:"tests"`
+	ProviderOverrides []ProviderOverrides `yaml:"providers"`
+	providers         *gconfigv1alpha1.Providers
 }
 
 // GetProviders returns the providers associated with the config.
@@ -26,6 +26,41 @@ func (c *Config) GetProviders() []*gconfigv1alpha1.Provider {
 		return nil
 	}
 	return c.providers.Providers
+}
+
+type ProviderOverrides struct {
+	ID            string `yaml:"id"`
+	DefaultRegion string `yaml:"defaultRegion"`
+
+	// pos is used for displaying linting errors
+	pos *FilePosition
+}
+
+func (p ProviderOverrides) filePosition() *FilePosition {
+	return p.pos
+}
+
+func (p *ProviderOverrides) UnmarshalYAML(value *yaml.Node) error {
+	var tmp struct {
+		ID            string `yaml:"id"`
+		DefaultRegion string `yaml:"defaultRegion"`
+	}
+
+	err := value.Decode(&tmp)
+	if err != nil {
+		return err
+	}
+
+	p.ID = tmp.ID
+	p.DefaultRegion = tmp.DefaultRegion
+
+	// Save the line number
+	p.pos = &FilePosition{
+		Col:  value.Column,
+		Line: value.Line,
+	}
+
+	return nil
 }
 
 type Group struct {
@@ -96,6 +131,41 @@ func (m Member) filePosition() *FilePosition {
 	return m.pos
 }
 
+type Account struct {
+	Account       string `yaml:"acct"`
+	DefaultRegion string `yaml:"defaultRegion"`
+
+	// pos is used for displaying linting errors
+	pos *FilePosition
+}
+
+func (a Account) filePosition() *FilePosition {
+	return a.pos
+}
+
+func (a *Account) UnmarshalYAML(value *yaml.Node) error {
+	var tmp struct {
+		Account       string `yaml:"acct"`
+		DefaultRegion string `yaml:"defaultRegion"`
+	}
+
+	err := value.Decode(&tmp)
+	if err != nil {
+		return err
+	}
+
+	a.Account = tmp.Account
+	a.DefaultRegion = tmp.DefaultRegion
+
+	// Save the line number
+	a.pos = &FilePosition{
+		Col:  value.Column,
+		Line: value.Line,
+	}
+
+	return nil
+}
+
 type RulePolicyField struct {
 	Policy string
 	// pos is used for displaying linting errors
@@ -111,12 +181,13 @@ type Rule struct {
 
 type Role struct {
 	ID              string        `yaml:"id"`
-	Accounts        []string      `yaml:"accounts"`
+	Accounts        []Account     `yaml:"accounts"`
 	Policy          string        `yaml:"policy"`
 	SessionDuration time.Duration `yaml:"sessionDuration"`
 	Rules           []Rule        `yaml:"rules"`
 	Group           string        `yaml:"group"`
 	Type            string        `yaml:"type"`
+	DefaultRegion   string        `yaml:"defaultRegion"`
 	roleAccounts    []RoleAccount
 	// pos is used for displaying linting errors
 	pos *FilePosition
@@ -144,12 +215,13 @@ func (p *RulePolicyField) filePosition() *FilePosition {
 func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	var tmp struct {
 		ID              string        `yaml:"id"`
-		Accounts        []string      `yaml:"accounts"`
+		Accounts        []Account     `yaml:"accounts"`
 		Policy          string        `yaml:"policy"`
 		Rules           []Rule        `yaml:"rules"`
 		SessionDuration time.Duration `yaml:"sessionDuration"`
 		Group           string        `yaml:"group"`
 		Type            string        `yaml:"type"`
+		DefaultRegion   string        `yaml:"defaultRegion"`
 	}
 
 	err := value.Decode(&tmp)
@@ -164,6 +236,7 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	r.SessionDuration = tmp.SessionDuration
 	r.Type = tmp.Type
 	r.Group = tmp.Group
+	r.DefaultRegion = tmp.DefaultRegion
 
 	// Save the line number
 	r.pos = &FilePosition{
@@ -181,8 +254,9 @@ func (r Role) filePosition() *FilePosition {
 // RoleAccount is a binding of a role to an Account
 // in a particular provider
 type RoleAccount struct {
-	AccountID  string
-	ProviderID string
+	AccountID     string
+	ProviderID    string
+	DefaultRegion string
 }
 
 // Test is the container for all Granted configuration tests

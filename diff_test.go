@@ -91,7 +91,7 @@ func TestRoleDiff(t *testing.T) {
 		Roles: []*Role{
 			{
 				ID:       "dev",
-				Accounts: []string{"123456789012"},
+				Accounts: []Account{{Account: "123456789012"}},
 			},
 		},
 	}
@@ -100,7 +100,7 @@ func TestRoleDiff(t *testing.T) {
 		Roles: []*Role{
 			{
 				ID:       "admin",
-				Accounts: []string{"123456789012"},
+				Accounts: []Account{{Account: "123456789012"}},
 			},
 		},
 	}
@@ -124,7 +124,7 @@ func TestUpdateRoleDiff(t *testing.T) {
 		Roles: []*Role{
 			{
 				ID:       "admin",
-				Accounts: []string{"123456789012", "123456789013"},
+				Accounts: []Account{{Account: "123456789012"}, {Account: "123456789013"}},
 				Rules: []Rule{
 					{
 						Policy: RulePolicyField{Policy: RulePolicyAllow.String()},
@@ -134,12 +134,12 @@ func TestUpdateRoleDiff(t *testing.T) {
 			},
 			{
 				ID:              "dev",
-				Accounts:        []string{"123456789012", "123456789013"},
+				Accounts:        []Account{{Account: "123456789012"}, {Account: "123456789013"}},
 				SessionDuration: time.Hour,
 			},
 			{
 				ID:              "dev2",
-				Accounts:        []string{"123456789012", "123456789013"},
+				Accounts:        []Account{{Account: "123456789012"}, {Account: "123456789013"}},
 				SessionDuration: time.Hour,
 			},
 		},
@@ -152,17 +152,17 @@ func TestUpdateRoleDiff(t *testing.T) {
 		Roles: []*Role{
 			{
 				ID:              "admin",
-				Accounts:        []string{"123456789013"},
+				Accounts:        []Account{{Account: "123456789013"}},
 				SessionDuration: time.Hour,
 			},
 			{
 				ID:              "dev",
-				Accounts:        []string{"123456789012", "123456789013"},
+				Accounts:        []Account{{Account: "123456789012"}, {Account: "123456789013"}},
 				SessionDuration: time.Hour,
 			},
 			{
 				ID:              "dev3",
-				Accounts:        []string{"123456789012", "123456789013"},
+				Accounts:        []Account{{Account: "123456789012"}, {Account: "123456789013"}},
 				SessionDuration: time.Hour,
 			},
 		},

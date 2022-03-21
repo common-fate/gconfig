@@ -88,6 +88,11 @@ func parseContents(filename string, in []byte, providers *gconfigv1alpha1.Provid
 				err = printLintError(r, err)
 				return nil, err
 			}
+			if r.DefaultRegion != "" {
+				err = fmt.Errorf("default region not supported on Okta roles")
+				err = printLintError(r, err)
+				return nil, err
+			}
 		} else {
 			if r.SessionDuration <= 0 {
 				err = fmt.Errorf("session required on each role")

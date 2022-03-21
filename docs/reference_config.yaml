@@ -23,19 +23,25 @@ groups:
       - b@commonfate.io
       - c@commonfate.io
       - d@commonfate.io
+
+# File-scoped 'provider settings'
+providers:
+  - id: ac1 # (should match a provider with ID 'ac1'
+    defaultRegion: ap-southeast-2
 # # Roles are permissions in a set of accounts available for users to assume.
 roles:
   # lower privilege roles may be granted without requiring reasons or approvals using the "allow" policy on the rule for a group
   - id: s3readonly
     type: ROLE_TYPE_AWS
     sessionDuration: 4h
+    defaultRegion: us-west-1
     # You may reference accounts by one of these formats <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>
     # there may be cases where aliases are the same across your accounts, this will raise a linting error and prompt with a possible solution for you
     accounts:
-      - ac1:sandbox
-      - ac3:sandbox:123456789122
-      - 123456789121
-      - research
+      - acct: ac1:sandbox
+      - acct: ac3:sandbox:123456789122
+      - acct: 123456789121
+      - acct: research
     policy: |
       {
         "Version": "2012-10-17",
@@ -57,8 +63,8 @@ roles:
     type: ROLE_TYPE_AWS
     sessionDuration: 4h
     accounts:
-      - 123456789120
-      - 123456789121
+      - acct: 123456789120
+      - acct: 123456789121
     policy: |
       {
         "Version": "2012-10-17",
@@ -83,8 +89,9 @@ roles:
     type: ROLE_TYPE_AWS
     sessionDuration: 1h
     accounts:
-      - 123456789120
-      - 123456789121
+      - acct: 123456789120
+        defaultRegion: us-east-2
+      - acct: 123456789121
     policy: |
       {
         "Version": "2012-10-17",

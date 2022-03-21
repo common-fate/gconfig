@@ -50,7 +50,7 @@ var (
 			{
 				ID:       "role",
 				Type:     "ROLE_TYPE_AWS",
-				Accounts: []string{"acc"},
+				Accounts: []Account{Account{Account: "acc"}},
 				roleAccounts: []RoleAccount{
 					{
 						AccountID:  "acc",
