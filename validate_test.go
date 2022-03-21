@@ -84,7 +84,7 @@ func TestValidAccounts(t *testing.T) {
   - id: test
     type: ROLE_TYPE_AWS
     accounts: 
-      - "123456789012"
+      - acct:  "123456789012"
     sessionDuration: 2h
     policy: TEST_POLICY`
 

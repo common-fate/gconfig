@@ -12,7 +12,7 @@ func TestSetRoleAccounts(t *testing.T) {
   - id: test
     type: ROLE_TYPE_AWS
     accounts: 
-      - "123456789012"
+      - acct:  "123456789012"
     policy: TEST_POLICY
     sessionDuration: 8h
   `
@@ -54,7 +54,7 @@ func TestSetRoleRuleAccounts(t *testing.T) {
   - id: test
     type: ROLE_TYPE_AWS
     accounts: 
-      - "123456789012"
+      - acct:  "123456789012"
     policy: TEST_POLICY
     sessionDuration: 8h
     rules:
@@ -97,7 +97,7 @@ func TestSetRoleAccounts_Invalid(t *testing.T) {
   - id: test
     type: ROLE_TYPE_AWS
     accounts: 
-      - "123456789012"
+      - acct:  "123456789012"
     policy: TEST_POLICY
     sessionDuration: 8h
   `
@@ -125,7 +125,7 @@ func TestSetRoleAccounts_Alias(t *testing.T) {
   - id: test
     type: ROLE_TYPE_AWS
     accounts: 
-      - "dev"
+      - acct:  "dev"
     policy: TEST_POLICY
     sessionDuration: 8h
   `
@@ -170,7 +170,7 @@ func TestSetRoleAccounts_Name(t *testing.T) {
   - id: test
     type: ROLE_TYPE_AWS
     accounts: 
-      - "Develop"
+      - acct:  "Develop"
     policy: TEST_POLICY
     sessionDuration: 8h
   `
@@ -215,7 +215,7 @@ func TestSetRoleAccounts_ConflictingAliases(t *testing.T) {
   - id: test
     type: ROLE_TYPE_AWS
     accounts: 
-      - "dev"
+      - acct:  "dev"
     policy: TEST_POLICY
     sessionDuration: 8h
   `
@@ -252,7 +252,7 @@ func TestSetRoleAccounts_PartialAlias(t *testing.T) {
   - id: test
     type: ROLE_TYPE_AWS
     accounts: 
-      - "aws:dev"
+      - acct:  "aws:dev"
     policy: TEST_POLICY
     sessionDuration: 8h	
   `
@@ -297,7 +297,7 @@ func TestSetRoleAccounts_FullWithAlias(t *testing.T) {
   - id: test
     type: ROLE_TYPE_AWS
     accounts: 
-      - "aws:dev:123456789012"
+      - acct:  "aws:dev:123456789012"
     policy: TEST_POLICY
     sessionDuration: 8h	
   `
@@ -342,7 +342,7 @@ func TestSetRoleAccounts_OU(t *testing.T) {
   - id: test
     type: ROLE_TYPE_AWS
     accounts: 
-      - "ou-4w0n-bads234"
+      - acct:  "ou-4w0n-bads234"
     policy: TEST_POLICY
     sessionDuration: 8h	
   `
@@ -399,7 +399,7 @@ func TestSetRoleAccounts_FullWithAliasOU(t *testing.T) {
   - id: test
     type: ROLE_TYPE_AWS
     accounts: 
-      - "aws:dev:ou-4w0n-bads234"
+      - acct:  "aws:dev:ou-4w0n-bads234"
     policy: TEST_POLICY
     sessionDuration: 8h	
   `
