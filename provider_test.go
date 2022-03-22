@@ -16,9 +16,10 @@ func TestProvidersToYAML(t *testing.T) {
 				OrgManagementAccountId: "2223334445555",
 				Accounts: []*gconfigv1alpha1.Account{
 					{
-						Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
-						Id:   "123456789012",
-						Name: "test",
+						Type:    gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
+						Id:      "123456789012",
+						Name:    "test",
+						Aliases: []string{"tester"},
 					},
 				},
 			},
@@ -50,6 +51,8 @@ providers:
       - id: "123456789012"
         name: test
         type: AWS::Account
+        aliases:
+          - tester
 `
 	assert.Equal(t, expected, string(res))
 
