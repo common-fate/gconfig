@@ -30,6 +30,7 @@ type accountYAML struct {
 	ID       string        `yaml:"id"`
 	Name     *string       `yaml:"name,omitempty"`
 	Type     string        `yaml:"type"`
+	Aliases  []string      `yaml:"aliases"`
 	Accounts []accountYAML `yaml:"accounts,omitempty"`
 }
 
@@ -93,7 +94,8 @@ func ProvidersToYAML(p *gconfigv1alpha1.Provider) ([]byte, error) {
 
 func buildAccountYAML(a *gconfigv1alpha1.Account) accountYAML {
 	ayaml := accountYAML{
-		ID: a.Id,
+		ID:      a.Id,
+		Aliases: a.Aliases,
 	}
 
 	switch a.Type {
