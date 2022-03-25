@@ -48,12 +48,64 @@ func parseContents(filename string, in []byte, providers *gconfigv1alpha1.Provid
 
 	for _, r := range c.Roles {
 		r.pos.Filename = filename
-		//validate the role has a session duration
-		if r.SessionDuration <= 0 {
-			err = fmt.Errorf("session required on each role")
+		if r.Type == "" {
+			keys := make([]string, 0, len(gconfigv1alpha1.RoleType_value))
+			for k := range gconfigv1alpha1.RoleType_value {
+				keys = append(keys, k)
+			}
+			err = fmt.Errorf("type required on each role. Valid types: %v", keys)
+			err = printLintError(r, err)
+			return nil, err
+		} else if _, ok := gconfigv1alpha1.RoleType_value[r.Type]; !ok {
+			keys := make([]string, 0, len(gconfigv1alpha1.RoleType_value))
+			for k := range gconfigv1alpha1.RoleType_value {
+				keys = append(keys, k)
+			}
+			err = fmt.Errorf("invalid type on role. Valid types: %v", keys)
 			err = printLintError(r, err)
 			return nil, err
 		}
+		//validate the role has a session duration
+		isOktaRole := r.Type == gconfigv1alpha1.RoleType_ROLE_TYPE_OKTA.String()
+		if isOktaRole {
+			if r.Group == "" {
+				err = fmt.Errorf("group required on each role")
+				err = printLintError(r, err)
+				return nil, err
+			}
+			if r.Policy != "" {
+				err = fmt.Errorf("policy not supported on Okta roles")
+				err = printLintError(r, err)
+				return nil, err
+			}
+			if len(r.Accounts) != 0 {
+				err = fmt.Errorf("accounts not supported on Okta roles")
+				err = printLintError(r, err)
+				return nil, err
+			}
+			if r.SessionDuration != 0 {
+				err = fmt.Errorf("session duration not supported on Okta roles")
+				err = printLintError(r, err)
+				return nil, err
+			}
+			if r.DefaultRegion != "" {
+				err = fmt.Errorf("default region not supported on Okta roles")
+				err = printLintError(r, err)
+				return nil, err
+			}
+		} else {
+			if r.SessionDuration <= 0 {
+				err = fmt.Errorf("session required on each role")
+				err = printLintError(r, err)
+				return nil, err
+			}
+			if r.Group != "" {
+				err = fmt.Errorf("group not supported on AWS roles")
+				err = printLintError(r, err)
+				return nil, err
+			}
+		}
+
 		for _, rule := range r.Rules {
 			rule.Policy.pos.Filename = filename
 			// Validates that the rule policy matches a supported policy type

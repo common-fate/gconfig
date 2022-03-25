@@ -15,12 +15,12 @@ var (
 			Providers: []*gconfigv1alpha1.Provider{
 				{
 					Id: "aws",
-					Accounts: []*gconfigv1alpha1.Account{
+					Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 						{
 							Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 							Id:   "acc",
 						},
-					},
+					}}},
 				},
 			},
 		},
@@ -49,7 +49,8 @@ var (
 		Roles: []*Role{
 			{
 				ID:       "role",
-				Accounts: []string{"acc"},
+				Type:     "ROLE_TYPE_AWS",
+				Accounts: []Account{Account{Account: "acc"}},
 				roleAccounts: []RoleAccount{
 					{
 						AccountID:  "acc",
@@ -105,7 +106,8 @@ var (
 		},
 		Roles: []*gconfigv1alpha1.Role{
 			{
-				Id: "role",
+				Id:   "role",
+				Type: gconfigv1alpha1.RoleType_ROLE_TYPE_AWS,
 				Accounts: []*gconfigv1alpha1.RoleAccount{
 					{
 						ProviderId: "aws",

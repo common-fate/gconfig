@@ -10,8 +10,9 @@ import (
 func TestSetRoleAccounts(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
-      - "123456789012"
+      - acct:  "123456789012"
     policy: TEST_POLICY
     sessionDuration: 8h
   `
@@ -20,12 +21,12 @@ func TestSetRoleAccounts(t *testing.T) {
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
+				Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 					{
 						Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 						Id:   "123456789012",
 					},
-				},
+				}}},
 			},
 		},
 	}
@@ -51,8 +52,9 @@ func TestSetRoleAccounts(t *testing.T) {
 func TestSetRoleRuleAccounts(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
-      - "123456789012"
+      - acct:  "123456789012"
     policy: TEST_POLICY
     sessionDuration: 8h
     rules:
@@ -65,12 +67,12 @@ func TestSetRoleRuleAccounts(t *testing.T) {
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
+				Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 					{
 						Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 						Id:   "123456789012",
 					},
-				},
+				}}},
 			},
 		},
 	}
@@ -93,8 +95,9 @@ func TestSetRoleRuleAccounts(t *testing.T) {
 func TestSetRoleAccounts_Invalid(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
-      - "123456789012"
+      - acct:  "123456789012"
     policy: TEST_POLICY
     sessionDuration: 8h
   `
@@ -103,12 +106,12 @@ func TestSetRoleAccounts_Invalid(t *testing.T) {
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
+				Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 					{
 						Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 						Id:   "222333444555",
 					},
-				},
+				}}},
 			},
 		},
 	}
@@ -120,8 +123,9 @@ func TestSetRoleAccounts_Invalid(t *testing.T) {
 func TestSetRoleAccounts_Alias(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
-      - "dev"
+      - acct:  "dev"
     policy: TEST_POLICY
     sessionDuration: 8h
   `
@@ -131,13 +135,13 @@ func TestSetRoleAccounts_Alias(t *testing.T) {
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
+				Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 					{
 						Type:    gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 						Id:      "123456789012",
 						Aliases: []string{"dev"},
 					},
-				},
+				}}},
 			},
 		},
 	}
@@ -164,8 +168,9 @@ func TestSetRoleAccounts_Alias(t *testing.T) {
 func TestSetRoleAccounts_Name(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
-      - "Develop"
+      - acct:  "Develop"
     policy: TEST_POLICY
     sessionDuration: 8h
   `
@@ -175,13 +180,13 @@ func TestSetRoleAccounts_Name(t *testing.T) {
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
+				Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 					{
 						Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 						Id:   "123456789012",
 						Name: "Develop",
 					},
-				},
+				}}},
 			},
 		},
 	}
@@ -208,8 +213,9 @@ func TestSetRoleAccounts_Name(t *testing.T) {
 func TestSetRoleAccounts_ConflictingAliases(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
-      - "dev"
+      - acct:  "dev"
     policy: TEST_POLICY
     sessionDuration: 8h
   `
@@ -220,7 +226,7 @@ func TestSetRoleAccounts_ConflictingAliases(t *testing.T) {
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
+				Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 					{
 						Type:    gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 						Id:      "123456789012",
@@ -231,7 +237,7 @@ func TestSetRoleAccounts_ConflictingAliases(t *testing.T) {
 						Id:      "222333444555",
 						Aliases: []string{"dev"},
 					},
-				},
+				}}},
 			},
 		},
 	}
@@ -244,8 +250,9 @@ func TestSetRoleAccounts_ConflictingAliases(t *testing.T) {
 func TestSetRoleAccounts_PartialAlias(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
-      - "aws:dev"
+      - acct:  "aws:dev"
     policy: TEST_POLICY
     sessionDuration: 8h	
   `
@@ -255,13 +262,13 @@ func TestSetRoleAccounts_PartialAlias(t *testing.T) {
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
+				Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 					{
 						Type:    gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 						Id:      "123456789012",
 						Aliases: []string{"dev"},
 					},
-				},
+				}}},
 			},
 		},
 	}
@@ -288,8 +295,9 @@ func TestSetRoleAccounts_PartialAlias(t *testing.T) {
 func TestSetRoleAccounts_FullWithAlias(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
-      - "aws:dev:123456789012"
+      - acct:  "aws:dev:123456789012"
     policy: TEST_POLICY
     sessionDuration: 8h	
   `
@@ -299,13 +307,13 @@ func TestSetRoleAccounts_FullWithAlias(t *testing.T) {
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
+				Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 					{
 						Type:    gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 						Id:      "123456789012",
 						Aliases: []string{"dev"},
 					},
-				},
+				}}},
 			},
 		},
 	}
@@ -332,8 +340,9 @@ func TestSetRoleAccounts_FullWithAlias(t *testing.T) {
 func TestSetRoleAccounts_OU(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
-      - "ou-4w0n-bads234"
+      - acct:  "ou-4w0n-bads234"
     policy: TEST_POLICY
     sessionDuration: 8h	
   `
@@ -343,14 +352,14 @@ func TestSetRoleAccounts_OU(t *testing.T) {
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
+				Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 					{
 						Type:     gconfigv1alpha1.Account_TYPE_UNSPECIFIED,
 						Id:       "ou-4w0n-bads234",
 						Name:     "dev",
 						Children: []*gconfigv1alpha1.Account{{Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT, Id: "12345678912", Name: "dev"}, {Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT, Id: "02345678912", Name: "admin"}},
 					},
-				},
+				}}},
 			},
 		},
 	}
@@ -388,8 +397,9 @@ func TestSetRoleAccounts_OU(t *testing.T) {
 func TestSetRoleAccounts_FullWithAliasOU(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
-      - "aws:dev:ou-4w0n-bads234"
+      - acct:  "aws:dev:ou-4w0n-bads234"
     policy: TEST_POLICY
     sessionDuration: 8h	
   `
@@ -399,14 +409,14 @@ func TestSetRoleAccounts_FullWithAliasOU(t *testing.T) {
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
+				Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 					{
 						Type:     gconfigv1alpha1.Account_TYPE_UNSPECIFIED,
 						Id:       "ou-4w0n-bads234",
 						Name:     "dev",
 						Children: []*gconfigv1alpha1.Account{{Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT, Id: "12345678912", Name: "dev"}, {Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT, Id: "02345678912", Name: "admin"}},
 					},
-				},
+				}}},
 			},
 		},
 	}

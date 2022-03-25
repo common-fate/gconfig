@@ -14,15 +14,17 @@ func TestProvidersToYAML(t *testing.T) {
 		Details: &gconfigv1alpha1.Provider_Aws{
 			Aws: &gconfigv1alpha1.AWSProviderDetails{
 				OrgManagementAccountId: "2223334445555",
+				Accounts: []*gconfigv1alpha1.Account{
+					{
+						Type:    gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
+						Id:      "123456789012",
+						Name:    "test",
+						Aliases: []string{"tester"},
+					},
+				},
 			},
 		},
-		Accounts: []*gconfigv1alpha1.Account{
-			{
-				Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
-				Id:   "123456789012",
-				Name: "test",
-			},
-		},
+
 		AccessHandlers: []*gconfigv1alpha1.AccessHandler{
 			{
 				Url: "http://accesshandler.example.com",
@@ -49,6 +51,8 @@ providers:
       - id: "123456789012"
         name: test
         type: AWS::Account
+        aliases:
+          - tester
 `
 	assert.Equal(t, expected, string(res))
 

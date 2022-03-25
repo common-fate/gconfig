@@ -1,0 +1,118 @@
+# This is the Granted configuration file. This file is the declarative specification for your
+# team's access to your cloud environments. As you add more roles and accounts this file will
+# grow in size; we recommend splitting it up when it grows large: https://granted.dev/cli/multi-file-config
+#
+# We recommend checking this config file into version control.
+type: granted/v1alpha1
+
+# Admins can update Granted config and approve and audit access requests.
+admins:
+  - a@commonfate.io
+  - b@commonfate.io
+
+# Granted Teams supports automated user provisioning: https://granted.dev/teams/provisioning
+users:
+  - c@commonfate.io
+  - d@commonfate.io
+
+groups:
+  - name: Developers
+    id: developers
+    members:
+      - a@commonfate.io
+      - b@commonfate.io
+      - c@commonfate.io
+      - d@commonfate.io
+
+# File-scoped 'provider settings'
+providers:
+  - id: ac1 # (should match a provider with ID 'ac1'
+    defaultRegion: ap-southeast-2
+# # Roles are permissions in a set of accounts available for users to assume.
+roles:
+  # lower privilege roles may be granted without requiring reasons or approvals using the "allow" policy on the rule for a group
+  - id: s3readonly
+    type: ROLE_TYPE_AWS
+    sessionDuration: 4h
+    defaultRegion: us-west-1
+    # You may reference accounts by one of these formats <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>
+    # there may be cases where aliases are the same across your accounts, this will raise a linting error and prompt with a possible solution for you
+    accounts:
+      - acct: ac1:sandbox
+      - acct: ac3:sandbox:123456789122
+      - acct: 123456789121
+      - acct: research
+    policy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": ["s3:Get*","s3:List*","s3:DescribeJob"],
+            "Resource": "*"
+          }
+        ]
+      }
+
+    rules:
+      - policy: allow
+        group: developers
+  # Higher privilege roles can be configured to require a reason before granting access using the "requireReason" policy
+  # These logs can be reviewed as part of a compliance audit
+  - id: s3fullaccess
+    type: ROLE_TYPE_AWS
+    sessionDuration: 4h
+    accounts:
+      - acct: 123456789120
+      - acct: 123456789121
+    policy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": "*"
+          }
+        ]
+      }
+    rules:
+      - policy: requireReason
+        group: developers
+  # For production roles, you can use a configuration like below.
+  # This configuration prompts for approval from an administrator
+  # and requires a reason to be given to access the role.
+  # In an outage situation the requestor can use "breakglass" access
+  # to assume the role immediately. If breakglass is used your
+  # team will receive an alert from Granted.
+  - id: breakglass
+    type: ROLE_TYPE_AWS
+    sessionDuration: 1h
+    accounts:
+      - acct: 123456789120
+        defaultRegion: us-east-2
+      - acct: 123456789121
+    policy: |
+      {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": "*",
+            "Resource": "*"
+          }
+        ]
+      }
+    rules:
+      - policy: requireApproval
+        group: developers
+        breakglass: true
+# # You can write tests to ensure the correctness of the rules you have written: https://granted.dev/cli/testing
+tests:
+  - name: Devs can access the Sandbox account with read access
+    given:
+      group: developers
+      role: s3readonly
+      account: 123456789120
+    then:
+      outcome: allow

@@ -82,8 +82,9 @@ func TestErrorPrintingNoFilename(t *testing.T) {
 func TestValidAccounts(t *testing.T) {
 	str := `roles:
   - id: test
+    type: ROLE_TYPE_AWS
     accounts: 
-      - "123456789012"
+      - acct:  "123456789012"
     sessionDuration: 2h
     policy: TEST_POLICY`
 
@@ -91,12 +92,12 @@ func TestValidAccounts(t *testing.T) {
 		Providers: []*gconfigv1alpha1.Provider{
 			{
 				Id: "aws",
-				Accounts: []*gconfigv1alpha1.Account{
+				Details: &gconfigv1alpha1.Provider_Aws{Aws: &gconfigv1alpha1.AWSProviderDetails{Accounts: []*gconfigv1alpha1.Account{
 					{
 						Type: gconfigv1alpha1.Account_TYPE_AWS_ACCOUNT,
 						Id:   "123456789012",
 					},
-				},
+				}}},
 			},
 		},
 	}

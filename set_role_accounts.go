@@ -46,70 +46,125 @@ func (c *Config) setRoleAccounts() error {
 	accountMap := make(map[string]accountAndProvider)
 	aliasMap := make(map[string][]accountAndProvider)
 	for _, p := range c.providers.Providers {
-		for _, acc := range p.Accounts {
-			collectAccountAndProvider(acc, p, accountMap, aliasMap)
+		switch v := p.Details.(type) {
+		case *gconfigv1alpha1.Provider_Aws:
+			for _, acc := range v.Aws.Accounts {
+				collectAccountAndProvider(acc, p, accountMap, aliasMap)
+			}
+		case *gconfigv1alpha1.Provider_AwsSso:
+			for _, acc := range v.AwsSso.Accounts {
+				collectAccountAndProvider(acc, p, accountMap, aliasMap)
+			}
 		}
 	}
 
 	for _, r := range c.Roles {
 		for _, a := range r.Accounts {
 			// logic for matching aliases
-			accountPieces := strings.Split(a, ":")
+			accountPieces := strings.Split(a.Account, ":")
 			numberOfPieces := len(accountPieces)
-			accountId := a
+			accountId := a.Account
 			if numberOfPieces > 3 {
-				err := fmt.Errorf("role %s references an account that is in the wrong format: %s . \naccount must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, a)
+				err := fmt.Errorf("role %s references an account that is in the wrong format: %s . \naccount must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, a.Account)
 				err = printLintError(r, err)
 				return err
 			} else if numberOfPieces == 3 {
 				// an account in the format <provider>:<alias>:<accountId> we can use the account id directly
 				accountId = accountPieces[2]
 			} else {
-				if numberOfPieces == 2 || !(IsStringAnAWSAccountID(a) || IsStringAnAWSOUID(a)) {
-					alias := a
+				// if its 2 parts or its not an accountid it must be an alias
+				if numberOfPieces == 2 || !(IsStringAnAWSAccountID(a.Account) || IsStringAnAWSOUID(a.Account)) {
+					alias := a.Account
 					if numberOfPieces == 2 {
+						providerExists := false
+						for _, p := range c.providers.Providers {
+							if p.Id == accountPieces[0] {
+								providerExists = true
+								break
+							}
+						}
+						if !providerExists {
+							err := fmt.Errorf("role %s references a provider that doesn't exist: %s \naccount must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, accountPieces[0])
+							err = printLintError(r, err)
+							return err
+						}
 						alias = accountPieces[1]
 					}
 					// it must be an alias
 					// find a match then set the acountid =
 					aliasAccounts, ok := aliasMap[alias]
 					if !ok {
-						err := fmt.Errorf("role %s references an account alias that doesn't exist: %s \naccount must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, a)
+						err := fmt.Errorf("role %s references an account alias that doesn't exist: %s \naccount must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, a.Account)
 						err = printLintError(r, err)
 						return err
 					}
 					if len(aliasAccounts) > 1 {
-						err := generateAmbiguousAliasError(r, a, alias, aliasAccounts)
-						err = printLintError(r, err)
-						return err
+						if numberOfPieces == 2 {
+							pacc := []accountAndProvider{}
+							for _, ac := range aliasAccounts {
+								if ac.Provider.Id == accountPieces[0] {
+									pacc = append(pacc, ac)
+								}
+							}
+							if len(pacc) > 1 {
+								err := generateAmbiguousAliasError(r, a.Account, alias, pacc)
+								err = printLintError(r, err)
+								return err
+							} else if len(pacc) == 1 {
+								accountId = pacc[0].Account.Id
+							} else {
+								err := fmt.Errorf("role %s references an account alias that doesn't exist for this provider: %s \naccount must be in the format <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>", r.ID, a.Account)
+								err = printLintError(r, err)
+								return err
+							}
 
+						} else {
+							err := generateAmbiguousAliasError(r, a.Account, alias, aliasAccounts)
+							err = printLintError(r, err)
+							return err
+						}
+					} else {
+						// only one alias macthes so we use that as the account
+						accountId = aliasAccounts[0].Account.Id
 					}
-					// only one alias macthes so we use that as the account
-					accountId = aliasAccounts[0].Account.Id
 				}
-
 			}
 			ap, ok := accountMap[accountId]
 			if !ok {
-				err := fmt.Errorf("role %s references an account that doesn't exist: %s", r.ID, a)
+				err := fmt.Errorf("role %s references an account that doesn't exist: %s", r.ID, a.Account)
 				err = printLintError(r, err)
 				return err
+			}
+			// Configure the default region in order of precedence account > role > provider
+			// default region can still end up empty, in which case it is up to the end user to set a region e.g the cli
+			defaultRegion := a.DefaultRegion
+			if defaultRegion == "" {
+				if r.DefaultRegion != "" {
+					defaultRegion = r.DefaultRegion
+				} else {
+					for _, po := range c.ProviderOverrides {
+						if po.ID == ap.Provider.Id && po.DefaultRegion != "" {
+							defaultRegion = po.DefaultRegion
+							break
+						}
+					}
+				}
 			}
 			if ap.Account.Type == gconfigv1alpha1.Account_TYPE_UNSPECIFIED {
 				// if it is an OU account, add all the children rather than the ou
 				for _, acc := range ap.Account.Children {
-					ra := RoleAccount{
-						AccountID:  acc.Id,
-						ProviderID: ap.Provider.Id,
-					}
-					r.roleAccounts = append(r.roleAccounts, ra)
+					r.roleAccounts = append(r.roleAccounts, RoleAccount{
+						AccountID:     acc.Id,
+						ProviderID:    ap.Provider.Id,
+						DefaultRegion: defaultRegion,
+					})
 				}
 			} else {
-				ra := RoleAccount{
-					AccountID:  ap.Account.Id,
-					ProviderID: ap.Provider.Id,
-				}
-				r.roleAccounts = append(r.roleAccounts, ra)
+				r.roleAccounts = append(r.roleAccounts, RoleAccount{
+					AccountID:     ap.Account.Id,
+					ProviderID:    ap.Provider.Id,
+					DefaultRegion: defaultRegion,
+				})
 			}
 
 		}
@@ -165,8 +220,15 @@ func MatchAccountOrAlias(providers []*gconfigv1alpha1.Provider, accountInput str
 	accountMap := make(map[string]accountAndProvider)
 	aliasMap := make(map[string][]accountAndProvider)
 	for _, p := range providers {
-		for _, acc := range p.Accounts {
-			collectAccountAndProvider(acc, p, accountMap, aliasMap)
+		switch v := p.Details.(type) {
+		case *gconfigv1alpha1.Provider_Aws:
+			for _, acc := range v.Aws.Accounts {
+				collectAccountAndProvider(acc, p, accountMap, aliasMap)
+			}
+		case *gconfigv1alpha1.Provider_AwsSso:
+			for _, acc := range v.AwsSso.Accounts {
+				collectAccountAndProvider(acc, p, accountMap, aliasMap)
+			}
 		}
 	}
 

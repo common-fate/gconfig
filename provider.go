@@ -30,7 +30,7 @@ type accountYAML struct {
 	ID       string        `yaml:"id"`
 	Name     *string       `yaml:"name,omitempty"`
 	Type     string        `yaml:"type"`
-	Aliases  []string      `yaml:aliases`
+	Aliases  []string      `yaml:"aliases,omitempty"`
 	Accounts []accountYAML `yaml:"accounts,omitempty"`
 }
 
@@ -48,13 +48,19 @@ func ProvidersToYAML(p *gconfigv1alpha1.Provider) ([]byte, error) {
 	case *gconfigv1alpha1.Provider_Aws:
 		pyaml.ManagementAccountID = &v.Aws.OrgManagementAccountId
 		pyaml.Type = "aws"
+		for _, acc := range v.Aws.Accounts {
+			ayaml := buildAccountYAML(acc)
+			pyaml.Accounts = append(pyaml.Accounts, ayaml)
+		}
+	case *gconfigv1alpha1.Provider_AwsSso:
+		pyaml.ManagementAccountID = &v.AwsSso.OrgManagementAccountId
+		pyaml.Type = "awsSSO"
+		for _, acc := range v.AwsSso.Accounts {
+			ayaml := buildAccountYAML(acc)
+			pyaml.Accounts = append(pyaml.Accounts, ayaml)
+		}
 	default:
 		return nil, fmt.Errorf("unhandled provider type %s", reflect.TypeOf(p.Details))
-	}
-
-	for _, acc := range p.Accounts {
-		ayaml := buildAccountYAML(acc)
-		pyaml.Accounts = append(pyaml.Accounts, ayaml)
 	}
 
 	for _, ah := range p.AccessHandlers {
@@ -88,7 +94,8 @@ func ProvidersToYAML(p *gconfigv1alpha1.Provider) ([]byte, error) {
 
 func buildAccountYAML(a *gconfigv1alpha1.Account) accountYAML {
 	ayaml := accountYAML{
-		ID: a.Id,
+		ID:      a.Id,
+		Aliases: a.Aliases,
 	}
 
 	switch a.Type {
