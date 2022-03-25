@@ -3,6 +3,7 @@ package gconfig
 import (
 	"crypto/sha256"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -49,14 +50,16 @@ type UpdateRole struct {
 }
 
 type AddRule struct {
-	Group      string
-	Policy     string
-	Breakglass bool
+	Group         string
+	Policy        string
+	Breakglass    bool
+	TokenRequired bool
 }
 type DeleteRule struct {
-	Group      string
-	Policy     string
-	Breakglass bool
+	Group         string
+	Policy        string
+	Breakglass    bool
+	TokenRequired bool
 }
 
 type ErrNoInPlaceUpdates struct {
@@ -84,9 +87,10 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 		IsAdmin bool
 	}
 	type ruleDetails struct {
-		policy     string
-		group      string
-		Breakglass bool
+		policy        string
+		group         string
+		Breakglass    bool
+		tokenRequired bool
 	}
 
 	oldUsersToDelete := make(map[string]userDetails)
@@ -198,14 +202,14 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				newRules := make(map[[32]byte]ruleDetails)
 
 				for _, rule := range old.Rules {
-					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group)))
-					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass}
+					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireJiraTicket)))
+					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, tokenRequired: rule.RequireJiraTicket}
 
 				}
 
 				for _, rule := range new.Rules {
-					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group)))
-					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass}
+					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireJiraTicket)))
+					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, tokenRequired: rule.RequireJiraTicket}
 
 				}
 
@@ -217,7 +221,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 						updatedRole = &UpdateRole{
 							ID:           old.ID,
 							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
-							AddRules:     append(updatedRole.AddRules, AddRule{Group: new_rule.group, Policy: new_rule.policy, Breakglass: new_rule.Breakglass}),
+							AddRules:     append(updatedRole.AddRules, AddRule{Group: new_rule.group, Policy: new_rule.policy, Breakglass: new_rule.Breakglass, TokenRequired: new_rule.tokenRequired}),
 						}
 
 					} else {
@@ -235,7 +239,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 						ID:           old.ID,
 						AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
 						AddRules:     updatedRole.AddRules,
-						DeleteRules:  append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy, Breakglass: rule.Breakglass}),
+						DeleteRules:  append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy, Breakglass: rule.Breakglass, TokenRequired: rule.tokenRequired}),
 					}
 				}
 
