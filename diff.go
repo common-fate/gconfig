@@ -3,6 +3,7 @@ package gconfig
 import (
 	"crypto/sha256"
 	"fmt"
+	"strings"
 )
 
 type Changes struct {
@@ -197,13 +198,13 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				newRules := make(map[[32]byte]ruleDetails)
 
 				for _, rule := range old.Rules {
-					hash := sha256.Sum256([]byte(rule.Policy.Policy + rule.Group))
+					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group)))
 					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass}
 
 				}
 
 				for _, rule := range new.Rules {
-					hash := sha256.Sum256([]byte(rule.Policy.Policy + rule.Group))
+					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group)))
 					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass}
 
 				}
