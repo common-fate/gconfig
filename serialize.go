@@ -118,8 +118,9 @@ func FromProtobuf(c *gconfigv1alpha1.Config, providers *gconfigv1alpha1.Provider
 		}
 		for _, rule := range r.Rules {
 			role.Rules = append(role.Rules, Rule{
-				Policy: RulePolicyField{Policy: rule.Policy},
-				Group:  rule.Group,
+				Policy:            RulePolicyField{Policy: rule.Policy},
+				Group:             rule.Group,
+				RequireJiraTicket: rule.Token,
 
 				Breakglass: rule.Breakglass,
 			})
