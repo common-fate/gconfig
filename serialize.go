@@ -49,6 +49,7 @@ func (c *Config) SerializeProtobuf() *gconfigv1alpha1.Config {
 			role.Rules = append(role.Rules, &gconfigv1alpha1.Rule{
 				Policy: rule.Policy.Policy,
 				Group:  rule.Group,
+				Token:  rule.RequireJiraTicket,
 
 				Breakglass: rule.Breakglass,
 			})
