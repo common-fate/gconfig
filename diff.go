@@ -209,48 +209,17 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				newRules := make(map[[32]byte]ruleDetails)
 
 				for _, rule := range old.Rules {
-					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireJiraTicket)))
-					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, tokenRequired: rule.RequireJiraTicket}
+					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireTicket)))
+					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, tokenRequired: rule.RequireTicket}
 
 				}
 
 				for _, rule := range new.Rules {
-					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireJiraTicket)))
-					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, tokenRequired: rule.RequireJiraTicket}
+					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireTicket)))
+					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, tokenRequired: rule.RequireTicket}
 
 				}
 				updatedRole := &UpdateRole{}
-
-				for i, _ := range new.Rules {
-					if new.Rules[i].Policy != old.Rules[i].Policy {
-						updatedRole = &UpdateRole{
-							ID:           old.ID,
-							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
-							UpdateRule:   append(updatedRole.UpdateRule, UpdateRule{ID: "Policy", AlteredField: append(updatedRole.UpdateRule.AlteredField, string{new.Rules[i].Policy})}),
-						}
-					}
-					if new.Rules[i].Group != old.Rules[i].Group {
-						updatedRole = &UpdateRole{
-							ID:           old.ID,
-							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
-							UpdateRule:   append(updatedRole.UpdateRule, UpdateRule{ID: "Group", AlteredField: new.Rules[i].Group}),
-						}
-					}
-					if new.Rules[i].Breakglass != old.Rules[i].Breakglass {
-						updatedRole = &UpdateRole{
-							ID:           old.ID,
-							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
-							UpdateRule:   append(updatedRole.UpdateRule, UpdateRule{ID: "Breakglass", AlteredField: new.Rules[i].Breakglass}),
-						}
-					}
-					if new.Rules[i].RequireJiraTicket != old.Rules[i].RequireJiraTicket {
-						updatedRole = &UpdateRole{
-							ID:           old.ID,
-							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
-							UpdateRule:   append(updatedRole.UpdateRule, UpdateRule{ID: "Token", AlteredField: strconv.FormatBool(new.Rules[i].RequireJiraTicket)}),
-						}
-					}
-				}
 
 				for hash, new_rule := range newRules {
 					//if we dont find it in the old hash then its new or edited
