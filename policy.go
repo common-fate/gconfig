@@ -17,7 +17,6 @@ const (
 	RulePolicyAllow           RulePolicy = iota + 1 // allow
 	RulePolicyRequireReason                         // requireReason
 	RulePolicyRequireApproval                       // requireApproval
-	RulePolicyToken                                 // requireToken
 )
 
 var ErrNoRuleMatch error = errors.New("either a matching rule does not exist or you do not have access")
@@ -72,8 +71,4 @@ func ReasonRequired(rulePolicy RulePolicy) bool {
 
 func ApprovalRequired(rulePolicy RulePolicy) bool {
 	return rulePolicy > RulePolicyRequireReason
-}
-
-func TokenRequired(rulePolicy RulePolicy) bool {
-	return rulePolicy > RulePolicyToken
 }
