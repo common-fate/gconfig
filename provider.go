@@ -107,6 +107,10 @@ func buildAccountYAML(a *gconfigv1alpha1.Account) accountYAML {
 		ayaml.Name = &a.Name
 	}
 
+	if len(a.Aliases) > 0 {
+		ayaml.Aliases = a.Aliases
+	}
+
 	for _, child := range a.Children {
 		childyaml := buildAccountYAML(child)
 		ayaml.Accounts = append(ayaml.Accounts, childyaml)

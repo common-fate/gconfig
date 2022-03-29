@@ -173,10 +173,10 @@ type RulePolicyField struct {
 }
 
 type Rule struct {
-	Policy RulePolicyField `yaml:"policy"`
-	Group  string          `yaml:"group"`
-
-	Breakglass bool `yaml:"breakglass"`
+	Policy        RulePolicyField `yaml:"policy"`
+	Group         string          `yaml:"group"`
+	RequireTicket bool            `yaml:"RequireTicket,omitempty"`
+	Breakglass    bool            `yaml:"breakglass"`
 }
 
 type Role struct {

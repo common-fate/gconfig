@@ -89,6 +89,7 @@ message Rule {
   string policy = 1;
   string group = 2;
   bool breakglass = 4;
+  bool token = 5;
 }
 
 message Test {
