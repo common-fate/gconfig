@@ -123,6 +123,11 @@ func parseContents(filename string, in []byte, providers *gconfigv1alpha1.Provid
 				err = fmt.Errorf("'breakglass: true' can only be used on policies which require approval")
 				err = printLintError(&rule.Policy, err)
 				return nil, err
+			} else if rule.RequireTicket && policy == RulePolicyAllow {
+				err = fmt.Errorf("'RequireTicket: true' can not be used on allow policies")
+				err = printLintError(&rule.Policy, err)
+				return nil, err
+
 			}
 
 		}
