@@ -54,7 +54,7 @@ type AddRule struct {
 	Group         string
 	Policy        string
 	Breakglass    bool
-	TokenRequired bool
+	RequireTicket bool
 }
 
 type UpdateRule struct {
@@ -66,7 +66,7 @@ type DeleteRule struct {
 	Group         string
 	Policy        string
 	Breakglass    bool
-	TokenRequired bool
+	RequireTicket bool
 }
 
 type ErrNoInPlaceUpdates struct {
@@ -97,7 +97,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 		policy        string
 		group         string
 		Breakglass    bool
-		tokenRequired bool
+		requireTicket bool
 	}
 
 	oldUsersToDelete := make(map[string]userDetails)
@@ -210,13 +210,13 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 
 				for _, rule := range old.Rules {
 					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireTicket)))
-					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, tokenRequired: rule.RequireTicket}
+					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, requireTicket: rule.RequireTicket}
 
 				}
 
 				for _, rule := range new.Rules {
 					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireTicket)))
-					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, tokenRequired: rule.RequireTicket}
+					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, requireTicket: rule.RequireTicket}
 
 				}
 				updatedRole := &UpdateRole{}
@@ -227,7 +227,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 						updatedRole = &UpdateRole{
 							ID:           old.ID,
 							AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
-							AddRules:     append(updatedRole.AddRules, AddRule{Group: new_rule.group, Policy: new_rule.policy, Breakglass: new_rule.Breakglass, TokenRequired: new_rule.tokenRequired}),
+							AddRules:     append(updatedRole.AddRules, AddRule{Group: new_rule.group, Policy: new_rule.policy, Breakglass: new_rule.Breakglass, RequireTicket: new_rule.requireTicket}),
 						}
 
 					} else {
@@ -245,7 +245,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 						ID:           old.ID,
 						AlteredField: append(ruleUpdateObj.AlteredField, "Rules"),
 						AddRules:     updatedRole.AddRules,
-						DeleteRules:  append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy, Breakglass: rule.Breakglass, TokenRequired: rule.tokenRequired}),
+						DeleteRules:  append(ruleUpdateObj.DeleteRules, DeleteRule{Group: rule.group, Policy: rule.policy, Breakglass: rule.Breakglass, RequireTicket: rule.requireTicket}),
 					}
 				}
 

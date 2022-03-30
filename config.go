@@ -175,7 +175,7 @@ type RulePolicyField struct {
 type Rule struct {
 	Policy        RulePolicyField `yaml:"policy"`
 	Group         string          `yaml:"group"`
-	RequireTicket bool            `yaml:"RequireTicket,omitempty"`
+	RequireTicket bool            `yaml:"requireTicket,omitempty"`
 	Breakglass    bool            `yaml:"breakglass"`
 }
 
