@@ -210,7 +210,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				newRules := make(map[[32]byte]ruleDetails)
 
 				for _, rule := range old.Rules {
-					policyBytes, err := json.Marshal(rule.Policy.Policy)
+					policyBytes, err := json.Marshal(rule.Policy)
 					if err != nil {
 						return Changes{}, err
 					}
@@ -220,7 +220,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				}
 
 				for _, rule := range new.Rules {
-					policyBytes, err := json.Marshal(rule.Policy.Policy)
+					policyBytes, err := json.Marshal(rule.Policy)
 					if err != nil {
 						return Changes{}, err
 					}

@@ -62,9 +62,9 @@ var (
 				Policy:          "policy",
 				Rules: []Rule{
 					{
-						Policy: RulePolicyField{Policy: map[string]interface{}{
+						Policy: map[string]interface{}{
 							"allow": true,
-						}},
+						},
 						Group: "test",
 					},
 				},

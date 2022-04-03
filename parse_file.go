@@ -91,7 +91,7 @@ func parseContents(filename string, in []byte, providers *gconfigv1alpha1.Provid
 		// }
 
 		for _, rule := range r.Rules {
-			rule.Policy.pos.Filename = filename
+			rule.pos.Filename = filename
 			// // Validates that the rule policy matches a supported policy type
 			// if policy, err := RulePolicyString(rule.Policy.Policy); err != nil {
 			// 	policyValues := []string{}

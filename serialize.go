@@ -48,7 +48,7 @@ func (c *Config) SerializeProtobuf() (*gconfigv1alpha1.Config, error) {
 			})
 		}
 		for _, rule := range r.Rules {
-			policy, err := structpb.NewStruct(rule.Policy.Policy)
+			policy, err := structpb.NewStruct(rule.Policy)
 			if err != nil {
 				return nil, err
 			}
@@ -128,7 +128,7 @@ func FromProtobuf(c *gconfigv1alpha1.Config, providers *gconfigv1alpha1.Provider
 		for _, rule := range r.Rules {
 			policy := rule.Policy.AsMap()
 			role.Rules = append(role.Rules, Rule{
-				Policy:        RulePolicyField{Policy: policy},
+				Policy:        policy,
 				Group:         rule.Group,
 				RequireTicket: rule.Token,
 

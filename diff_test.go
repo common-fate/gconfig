@@ -127,9 +127,9 @@ func TestUpdateRoleDiff(t *testing.T) {
 				Accounts: []Account{{Account: "123456789012"}, {Account: "123456789013"}},
 				Rules: []Rule{
 					{
-						Policy: RulePolicyField{Policy: map[string]interface{}{
+						Policy: map[string]interface{}{
 							"allow": true,
-						}},
+						},
 					},
 				},
 				SessionDuration: time.Hour,

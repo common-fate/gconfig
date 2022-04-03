@@ -166,17 +166,43 @@ func (a *Account) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
-type RulePolicyField struct {
-	Policy map[string]interface{}
+type Rule struct {
+	Policy        map[string]interface{} `yaml:"policy"`
+	Group         string                 `yaml:"group"`
+	RequireTicket bool                   `yaml:"requireTicket,omitempty"`
+	Breakglass    bool                   `yaml:"breakglass"`
+
 	// pos is used for displaying linting errors
 	pos *FilePosition
 }
 
-type Rule struct {
-	Policy        RulePolicyField `yaml:"policy"`
-	Group         string          `yaml:"group"`
-	RequireTicket bool            `yaml:"requireTicket,omitempty"`
-	Breakglass    bool            `yaml:"breakglass"`
+// validates that the rule is valid at parsing time
+func (p *Rule) UnmarshalYAML(value *yaml.Node) error {
+
+	var tmp struct {
+		Policy        map[string]interface{} `yaml:"policy"`
+		Group         string                 `yaml:"group"`
+		RequireTicket bool                   `yaml:"requireTicket,omitempty"`
+		Breakglass    bool                   `yaml:"breakglass"`
+	}
+
+	err := value.Decode(&tmp)
+	if err != nil {
+		return err
+	}
+	p.pos = &FilePosition{
+		Col:  value.Column,
+		Line: value.Line,
+	}
+	p.Policy = tmp.Policy
+	p.Group = tmp.Group
+	p.Breakglass = tmp.Breakglass
+	p.RequireTicket = tmp.RequireTicket
+	return nil
+}
+
+func (p *Rule) filePosition() *FilePosition {
+	return p.pos
 }
 
 type Role struct {
@@ -194,25 +220,6 @@ type Role struct {
 	pos *FilePosition
 }
 
-// validates that the policy is valid at parsing time
-// To add more policy types, add to the policy.go enum
-func (p *RulePolicyField) UnmarshalYAML(value *yaml.Node) error {
-	var tmp map[string]interface{}
-	err := value.Decode(&tmp)
-	if err != nil {
-		return err
-	}
-	p.pos = &FilePosition{
-		Col:  value.Column,
-		Line: value.Line,
-	}
-	p.Policy = tmp
-	return nil
-
-}
-func (p *RulePolicyField) filePosition() *FilePosition {
-	return p.pos
-}
 func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	var tmp struct {
 		ID              string        `yaml:"id"`
