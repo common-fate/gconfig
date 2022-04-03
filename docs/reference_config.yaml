@@ -32,7 +32,8 @@ providers:
 roles:
   # lower privilege roles may be granted without requiring reasons or approvals using the "allow" policy on the rule for a group
   - id: s3readonly
-    type: ROLE_TYPE_AWS
+    type: aws
+    provider: aws
     sessionDuration: 4h
     defaultRegion: us-west-1
     # You may reference accounts by one of these formats <accountId> or <alias> or <provider>:<alias> or <provider>:<alias>:<accountId>
@@ -61,7 +62,8 @@ roles:
   # Higher privilege roles can be configured to require a reason before granting access using the "requireReason" policy
   # These logs can be reviewed as part of a compliance audit
   - id: s3fullaccess
-    type: ROLE_TYPE_AWS
+    type: aws
+    provider: aws
     sessionDuration: 4h
     accounts:
       - acct: 123456789120
@@ -88,7 +90,8 @@ roles:
   # to assume the role immediately. If breakglass is used your
   # team will receive an alert from Granted.
   - id: breakglass
-    type: ROLE_TYPE_AWS
+    type: aws
+    provider: aws
     sessionDuration: 1h
     accounts:
       - acct: 123456789120

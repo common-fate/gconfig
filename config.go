@@ -185,8 +185,9 @@ type Role struct {
 	Policy          string        `yaml:"policy"`
 	SessionDuration time.Duration `yaml:"sessionDuration"`
 	Rules           []Rule        `yaml:"rules"`
+	ProviderID      string        `yaml:"provider"`
 	Group           string        `yaml:"group"`
-	Type            string        `yaml:"type"`
+	Type            RoleType      `yaml:"type"`
 	DefaultRegion   string        `yaml:"defaultRegion"`
 	roleAccounts    []RoleAccount
 	// pos is used for displaying linting errors
@@ -229,12 +230,17 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 		return err
 	}
 
+	roleType, err := ParseRoleType(tmp.Type)
+	if err != nil {
+		return err
+	}
+
 	r.ID = tmp.ID
 	r.Accounts = tmp.Accounts
 	r.Policy = tmp.Policy
 	r.Rules = tmp.Rules
 	r.SessionDuration = tmp.SessionDuration
-	r.Type = tmp.Type
+	r.Type = roleType
 	r.Group = tmp.Group
 	r.DefaultRegion = tmp.DefaultRegion
 

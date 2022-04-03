@@ -64,8 +64,9 @@ message Account {
   repeated Account children = 5;
 }
 enum RoleType {
-  ROLE_TYPE_AWS = 0;
-  ROLE_TYPE_OKTA = 1;
+  ROLE_TYPE_UNSPECIFIED = 0;
+  ROLE_TYPE_AWS = 1;
+  ROLE_TYPE_OKTA = 2;
 }
 message Role {
   string id = 1;
@@ -75,6 +76,7 @@ message Role {
   google.protobuf.Duration session_duration = 5;
   RoleType type = 6;
   string group = 7;
+  string provider_id = 8;
 }
 
 // RoleAccount is a binding of a role to an Account
