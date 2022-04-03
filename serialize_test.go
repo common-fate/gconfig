@@ -50,7 +50,7 @@ var (
 		Roles: []*Role{
 			{
 				ID:       "role",
-				Type:     RoleTypeAWS,
+				Type:     "aws",
 				Accounts: []Account{{Account: "acc"}},
 				roleAccounts: []RoleAccount{
 					{
@@ -110,7 +110,7 @@ var (
 		Roles: []*gconfigv1alpha1.Role{
 			{
 				Id:   "role",
-				Type: gconfigv1alpha1.RoleType_ROLE_TYPE_AWS,
+				Type: "aws",
 				Accounts: []*gconfigv1alpha1.RoleAccount{
 					{
 						ProviderId: "aws",

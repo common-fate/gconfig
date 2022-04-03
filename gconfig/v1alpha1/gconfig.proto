@@ -63,18 +63,14 @@ message Account {
   repeated string aliases = 4;
   repeated Account children = 5;
 }
-enum RoleType {
-  ROLE_TYPE_UNSPECIFIED = 0;
-  ROLE_TYPE_AWS = 1;
-  ROLE_TYPE_OKTA = 2;
-}
+
 message Role {
   string id = 1;
   repeated RoleAccount accounts = 2;
   string policy = 3;
   repeated Rule rules = 4;
   google.protobuf.Duration session_duration = 5;
-  RoleType type = 6;
+  string type = 6;
   string group = 7;
   string provider_id = 8;
 }
