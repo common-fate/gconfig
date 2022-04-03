@@ -219,6 +219,7 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 		Accounts        []Account     `yaml:"accounts"`
 		Policy          string        `yaml:"policy"`
 		Rules           []Rule        `yaml:"rules"`
+		ProviderID      string        `yaml:"provider"`
 		SessionDuration time.Duration `yaml:"sessionDuration"`
 		Group           string        `yaml:"group"`
 		Type            string        `yaml:"type"`
@@ -235,6 +236,7 @@ func (r *Role) UnmarshalYAML(value *yaml.Node) error {
 	r.Policy = tmp.Policy
 	r.Rules = tmp.Rules
 	r.SessionDuration = tmp.SessionDuration
+	r.ProviderID = tmp.ProviderID
 	r.Type = tmp.Type
 	r.Group = tmp.Group
 	r.DefaultRegion = tmp.DefaultRegion

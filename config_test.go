@@ -23,6 +23,24 @@ func Test_LineNumberParsed(t *testing.T) {
 	assert.Equal(t, 2, c.Admins[0].pos.Line)
 }
 
+func TestProviderParsed(t *testing.T) {
+	str := `roles:
+  - id: s3readonly
+    type: aws
+    provider: aws-1
+`
+
+	var c Config
+
+	err := yaml.Unmarshal([]byte(str), &c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.NotNil(t, c.Roles)
+	assert.Equal(t, "aws-1", c.Roles[0].ProviderID)
+}
+
 // func Test_PolicyValidated(t *testing.T) {
 
 // 	b, err := ioutil.ReadFile("configtest.yaml")
