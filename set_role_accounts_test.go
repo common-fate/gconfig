@@ -84,7 +84,7 @@ func TestSetRoleRuleAccounts(t *testing.T) {
 
 	expected := Rule{
 		Group:  "developers",
-		Policy: RulePolicyField{Policy: RulePolicyAllow.String(), pos: c.Roles[0].Rules[0].Policy.pos},
+		Policy: RulePolicyField{Policy: map[string]interface{}{"allow": true}, pos: c.Roles[0].Rules[0].Policy.pos},
 	}
 
 	actual := c.Roles[0].Rules[0]

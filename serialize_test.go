@@ -7,6 +7,7 @@ import (
 	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 var (
@@ -50,7 +51,7 @@ var (
 			{
 				ID:       "role",
 				Type:     "ROLE_TYPE_AWS",
-				Accounts: []Account{Account{Account: "acc"}},
+				Accounts: []Account{{Account: "acc"}},
 				roleAccounts: []RoleAccount{
 					{
 						AccountID:  "acc",
@@ -61,8 +62,10 @@ var (
 				Policy:          "policy",
 				Rules: []Rule{
 					{
-						Policy: RulePolicyField{Policy: RulePolicyAllow.String()},
-						Group:  "test",
+						Policy: RulePolicyField{Policy: map[string]interface{}{
+							"allow": true,
+						}},
+						Group: "test",
 					},
 				},
 			},
@@ -118,8 +121,12 @@ var (
 				Policy:          "policy",
 				Rules: []*gconfigv1alpha1.Rule{
 					{
-						Policy: "allow",
-						Group:  "test",
+						Policy: &structpb.Struct{
+							Fields: map[string]*structpb.Value{
+								"allow": structpb.NewBoolValue(true),
+							},
+						},
+						Group: "test",
 					},
 				},
 			},
@@ -141,7 +148,10 @@ var (
 )
 
 func TestSerialize(t *testing.T) {
-	out := cfg.SerializeProtobuf()
+	out, err := cfg.SerializeProtobuf()
+	if err != nil {
+		t.Fatal(err)
+	}
 	assert.Equal(t, expected, out)
 }
 

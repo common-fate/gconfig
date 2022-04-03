@@ -127,7 +127,9 @@ func TestUpdateRoleDiff(t *testing.T) {
 				Accounts: []Account{{Account: "123456789012"}, {Account: "123456789013"}},
 				Rules: []Rule{
 					{
-						Policy: RulePolicyField{Policy: RulePolicyAllow.String()},
+						Policy: RulePolicyField{Policy: map[string]interface{}{
+							"allow": true,
+						}},
 					},
 				},
 				SessionDuration: time.Hour,
@@ -181,7 +183,7 @@ func TestUpdateRoleDiff(t *testing.T) {
 
 				AddRules: nil,
 
-				DeleteRules: []DeleteRule{{Group: "", Policy: "allow", Breakglass: false}},
+				DeleteRules: []DeleteRule{{Group: "", Policy: "{\"allow\":true}", Breakglass: false}},
 			},
 		},
 		DeleteRoles: []string{"dev2"},

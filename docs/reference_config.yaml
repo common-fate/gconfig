@@ -55,7 +55,8 @@ roles:
       }
 
     rules:
-      - policy: allow
+      - policy:
+          allow: true
         group: developers
   # Higher privilege roles can be configured to require a reason before granting access using the "requireReason" policy
   # These logs can be reviewed as part of a compliance audit
@@ -77,7 +78,8 @@ roles:
         ]
       }
     rules:
-      - policy: requireReason
+      - policy:
+          reason: true
         group: developers
   # For production roles, you can use a configuration like below.
   # This configuration prompts for approval from an administrator
@@ -104,9 +106,9 @@ roles:
         ]
       }
     rules:
-      - policy: requireApproval
-        group: developers
-        breakglass: true
+      - group: developers
+        policy:
+          allow: true
 # # You can write tests to ensure the correctness of the rules you have written: https://granted.dev/cli/testing
 tests:
   - name: Devs can access the Sandbox account with read access

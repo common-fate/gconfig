@@ -167,7 +167,7 @@ func (a *Account) UnmarshalYAML(value *yaml.Node) error {
 }
 
 type RulePolicyField struct {
-	Policy string
+	Policy map[string]interface{}
 	// pos is used for displaying linting errors
 	pos *FilePosition
 }
@@ -196,7 +196,7 @@ type Role struct {
 // validates that the policy is valid at parsing time
 // To add more policy types, add to the policy.go enum
 func (p *RulePolicyField) UnmarshalYAML(value *yaml.Node) error {
-	var tmp string
+	var tmp map[string]interface{}
 	err := value.Decode(&tmp)
 	if err != nil {
 		return err

@@ -2,6 +2,7 @@ package gconfig
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -209,14 +210,23 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				newRules := make(map[[32]byte]ruleDetails)
 
 				for _, rule := range old.Rules {
-					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireTicket)))
-					oldRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, requireTicket: rule.RequireTicket}
+					policyBytes, err := json.Marshal(rule.Policy.Policy)
+					if err != nil {
+						return Changes{}, err
+					}
+					hash := sha256.Sum256([]byte(string(policyBytes) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireTicket)))
+					oldRules[hash] = ruleDetails{group: rule.Group, policy: string(policyBytes), Breakglass: rule.Breakglass, requireTicket: rule.RequireTicket}
 
 				}
 
 				for _, rule := range new.Rules {
-					hash := sha256.Sum256([]byte(strings.ToLower(rule.Policy.Policy) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireTicket)))
-					newRules[hash] = ruleDetails{group: rule.Group, policy: rule.Policy.Policy, Breakglass: rule.Breakglass, requireTicket: rule.RequireTicket}
+					policyBytes, err := json.Marshal(rule.Policy.Policy)
+					if err != nil {
+						return Changes{}, err
+					}
+
+					hash := sha256.Sum256([]byte(string(policyBytes) + strings.ToLower(rule.Group) + strconv.FormatBool(rule.RequireTicket)))
+					newRules[hash] = ruleDetails{group: rule.Group, policy: string(policyBytes), Breakglass: rule.Breakglass, requireTicket: rule.RequireTicket}
 
 				}
 				updatedRole := &UpdateRole{}

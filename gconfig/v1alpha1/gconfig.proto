@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package gconfig.v1alpha1;
 import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
 
 message Config {
   repeated Member admins = 1;
@@ -86,7 +87,7 @@ message RoleAccount {
 }
 
 message Rule {
-  string policy = 1;
+  google.protobuf.Struct policy = 1;
   string group = 2;
   bool breakglass = 4;
   bool token = 5;

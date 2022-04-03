@@ -3,9 +3,10 @@ package gconfig
 import (
 	gconfigv1alpha1 "github.com/common-fate/gconfig/gen/gconfig/v1alpha1"
 	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func (c *Config) SerializeProtobuf() *gconfigv1alpha1.Config {
+func (c *Config) SerializeProtobuf() (*gconfigv1alpha1.Config, error) {
 	out := &gconfigv1alpha1.Config{}
 
 	for _, u := range c.Admins {
@@ -46,8 +47,13 @@ func (c *Config) SerializeProtobuf() *gconfigv1alpha1.Config {
 			})
 		}
 		for _, rule := range r.Rules {
+			policy, err := structpb.NewStruct(rule.Policy.Policy)
+			if err != nil {
+				return nil, err
+			}
+
 			role.Rules = append(role.Rules, &gconfigv1alpha1.Rule{
-				Policy: rule.Policy.Policy,
+				Policy: policy,
 				Group:  rule.Group,
 				Token:  rule.RequireTicket,
 
@@ -71,7 +77,7 @@ func (c *Config) SerializeProtobuf() *gconfigv1alpha1.Config {
 		})
 	}
 
-	return out
+	return out, nil
 }
 
 func FromProtobuf(c *gconfigv1alpha1.Config, providers *gconfigv1alpha1.Providers) Config {
@@ -118,8 +124,9 @@ func FromProtobuf(c *gconfigv1alpha1.Config, providers *gconfigv1alpha1.Provider
 			role.Accounts = append(role.Accounts, Account{Account: ra.AccountId, DefaultRegion: ra.DefaultRegion})
 		}
 		for _, rule := range r.Rules {
+			policy := rule.Policy.AsMap()
 			role.Rules = append(role.Rules, Rule{
-				Policy:        RulePolicyField{Policy: rule.Policy},
+				Policy:        RulePolicyField{Policy: policy},
 				Group:         rule.Group,
 				RequireTicket: rule.Token,
 
