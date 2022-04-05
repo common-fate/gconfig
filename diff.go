@@ -181,23 +181,6 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 	allNewGroups := make(map[string]Group)
 	allPrevGroups := make(map[string]Group)
 
-	allNewGroupsMems := make(map[string]Member)
-	allPrevGroupsMems := make(map[string]Member)
-
-	for _, u := range c.Groups {
-		allNewGroups[u.ID] = u
-		//check the group members
-		for _, m := range u.Members {
-			allNewGroupsMems[m.Email] = m
-		}
-	}
-	for _, o := range old.Groups {
-		allPrevGroups[o.ID] = o
-		for _, m := range o.Members {
-			allPrevGroupsMems[m.Email] = m
-		}
-	}
-
 	for id, new := range allNewGroups {
 		//check to see if any of the group details have changed
 		groupUpdateObj := UpdateGroup{
@@ -215,6 +198,17 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 
 			newMembers := []AddMembers{}
 			delMembers := []DeleteMembers{}
+
+			allNewGroupsMems := make(map[string]Member)
+			allPrevGroupsMems := make(map[string]Member)
+
+			for _, m := range new.Members {
+				allNewGroupsMems[m.Email] = m
+			}
+
+			for _, m := range old.Members {
+				allPrevGroupsMems[m.Email] = m
+			}
 
 			//new members added to the group
 			if len(new.Members) > len(old.Members) {
