@@ -180,7 +180,14 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 	//groups
 	allNewGroups := make(map[string]Group)
 	allPrevGroups := make(map[string]Group)
+	for _, u := range c.Groups {
+		allNewGroups[u.ID] = u
 
+	}
+	for _, o := range old.Groups {
+		allPrevGroups[o.ID] = o
+
+	}
 	for id, new := range allNewGroups {
 		//check to see if any of the group details have changed
 		groupUpdateObj := UpdateGroup{
