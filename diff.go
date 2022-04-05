@@ -257,11 +257,11 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 
 	}
 
-	for id := range allPrevGroups {
+	for id, old := range allPrevGroups {
 
 		//if there isnt a match then a group has been deleted
-		if new, ok := allNewGroups[id]; !ok {
-			ch.DeleteGroup = append(ch.DeleteGroup, DeleteGroup{Name: new.Name, ID: new.ID, Members: new.Members})
+		if _, ok := allNewGroups[id]; !ok {
+			ch.DeleteGroup = append(ch.DeleteGroup, DeleteGroup{Name: old.Name, ID: old.ID, Members: old.Members})
 
 		}
 
