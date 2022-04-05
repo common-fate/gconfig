@@ -16,6 +16,9 @@ type Changes struct {
 	AddRoles     []string
 	DeleteRoles  []string
 	UpdateRoles  []UpdateRole
+	UpdateGroup  []UpdateGroup
+	AddGroup     []AddGroup
+	DeleteGroup  []DeleteGroup
 	// @TODO:
 	// - AddGroups
 	// - DeleteGroups
@@ -31,6 +34,9 @@ func (c Changes) Empty() bool {
 		len(c.AddRoles) == 0 &&
 		len(c.DeleteRoles) == 0 &&
 		len(c.UpdateRoles) == 0 &&
+		len(c.UpdateGroup) == 0 &&
+		len(c.DeleteGroup) == 0 &&
+		len(c.AddGroup) == 0 &&
 		len(c.AddAdmins) == 0)
 }
 
@@ -48,6 +54,34 @@ type UpdateRole struct {
 	UpdateRule  []UpdateRule
 	AddRules    []AddRule
 	DeleteRules []DeleteRule
+}
+
+type UpdateGroup struct {
+	ID string
+	// String describing what field changed
+	AlteredField  []string // @TODO: potentially make into enum?
+	AddMembers    []AddMembers
+	DeleteMembers []DeleteMembers
+}
+
+type AddMembers struct {
+	Email Member
+}
+
+type DeleteMembers struct {
+	Email Member
+}
+
+type AddGroup struct {
+	Name    string
+	ID      string
+	Members []Member
+}
+
+type DeleteGroup struct {
+	Name    string
+	ID      string
+	Members []Member
 }
 
 type AddRule struct {
@@ -92,12 +126,6 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 	// 3. update a user (change them from a user to an admin, or vice versa)
 	type userDetails struct {
 		IsAdmin bool
-	}
-	type ruleDetails struct {
-		policy        string
-		group         string
-		Breakglass    bool
-		requireTicket bool
 	}
 
 	oldUsersToDelete := make(map[string]userDetails)
@@ -149,6 +177,99 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 		}
 	}
 
+	//groups
+	allNewGroups := make(map[string]Group)
+	allPrevGroups := make(map[string]Group)
+	for _, u := range c.Groups {
+		allNewGroups[u.ID] = u
+
+	}
+	for _, o := range old.Groups {
+		allPrevGroups[o.ID] = o
+
+	}
+	for id, new := range allNewGroups {
+		//check to see if any of the group details have changed
+		groupUpdateObj := UpdateGroup{
+			ID:           id,
+			AlteredField: []string{},
+		}
+		//if there is a match then the group hasnt been deleted
+		groupUpdated := false
+		if old, ok := allPrevGroups[id]; ok {
+
+			if new.Name != old.Name {
+				groupUpdateObj.AlteredField = append(groupUpdateObj.AlteredField, "Name")
+				groupUpdated = true
+			}
+
+			newMembers := []AddMembers{}
+			delMembers := []DeleteMembers{}
+
+			allNewGroupsMems := make(map[string]Member)
+			allPrevGroupsMems := make(map[string]Member)
+
+			for _, m := range new.Members {
+				allNewGroupsMems[m.Email] = m
+			}
+
+			for _, m := range old.Members {
+				allPrevGroupsMems[m.Email] = m
+			}
+
+			//new members added to the group
+			if len(new.Members) > len(old.Members) {
+
+				for _, newMems := range allNewGroupsMems {
+					if _, ok := allPrevGroupsMems[newMems.Email]; !ok {
+
+						newMembers = append(newMembers, AddMembers{newMems})
+						groupUpdated = true
+
+					}
+
+				}
+				groupUpdateObj.AddMembers = newMembers
+			}
+			if len(new.Members) < len(old.Members) {
+				//removed members
+				for _, prevMems := range allPrevGroupsMems {
+					if _, ok := allPrevGroupsMems[prevMems.Email]; !ok {
+						delMembers = append(delMembers, DeleteMembers{prevMems})
+						groupUpdated = true
+
+					}
+
+				}
+				groupUpdateObj.DeleteMembers = delMembers
+
+			}
+
+			if groupUpdated {
+				ch.UpdateGroup = append(ch.UpdateGroup, groupUpdateObj)
+
+			}
+
+		} else {
+			//new group added
+			ch.AddGroup = append(ch.AddGroup, AddGroup{Name: new.Name, ID: new.ID, Members: new.Members})
+
+		}
+
+	}
+
+	for id, old := range allPrevGroups {
+
+		//if there isnt a match then a group has been deleted
+		if _, ok := allNewGroups[id]; !ok {
+			ch.DeleteGroup = append(ch.DeleteGroup, DeleteGroup{Name: old.Name, ID: old.ID, Members: old.Members})
+
+		}
+
+	}
+
+	//roles
+
 	allNewRoles := make(map[string]Role)
 	allPrevRoles := make(map[string]Role)
 	// for _, u := range c.Roles {
@@ -197,6 +318,13 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				// If there's a rule count difference
 				if oldRuleCount != newRuleCount {
 					ruleUpdateObj.AlteredField = append(ruleUpdateObj.AlteredField, "Rules")
+				}
+
+				type ruleDetails struct {
+					policy        string
+					group         string
+					Breakglass    bool
+					requireTicket bool
 				}
 
 				//loop through old rules and hash the combination of policy+group
