@@ -32,6 +32,7 @@ func (c Changes) Empty() bool {
 		len(c.AddRoles) == 0 &&
 		len(c.DeleteRoles) == 0 &&
 		len(c.UpdateRoles) == 0 &&
+		len(c.UpdateGroup) == 0 &&
 		len(c.AddAdmins) == 0)
 }
 
