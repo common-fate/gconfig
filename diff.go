@@ -205,10 +205,12 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 			AlteredField: []string{},
 		}
 		//if there is a match then the group hasnt been deleted
+		groupUpdated := false
 		if old, ok := allPrevGroups[id]; ok {
 
 			if new.Name != old.Name {
 				groupUpdateObj.AlteredField = append(groupUpdateObj.AlteredField, "Name")
+				groupUpdated = true
 			}
 
 			newMembers := []AddMembers{}
@@ -219,7 +221,10 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 
 				for _, newMems := range allNewGroupsMems {
 					if _, ok := allPrevGroups[newMems.Email]; !ok {
+
 						newMembers = append(newMembers, AddMembers{newMems})
+						groupUpdated = true
+
 					}
 
 				}
@@ -230,6 +235,8 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				for _, prevMems := range allPrevGroupsMems {
 					if _, ok := allNewGroups[prevMems.Email]; !ok {
 						delMembers = append(delMembers, DeleteMembers{prevMems})
+						groupUpdated = true
+
 					}
 
 				}
@@ -237,7 +244,10 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 
 			}
 
-			ch.UpdateGroup = append(ch.UpdateGroup, groupUpdateObj)
+			if groupUpdated {
+				ch.UpdateGroup = append(ch.UpdateGroup, groupUpdateObj)
+
+			}
 
 		} else {
 			//new group added
