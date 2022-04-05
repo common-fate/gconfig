@@ -221,7 +221,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 			if len(new.Members) > len(old.Members) {
 
 				for _, newMems := range allNewGroupsMems {
-					if _, ok := allPrevGroups[newMems.Email]; !ok {
+					if _, ok := allPrevGroupsMems[newMems.Email]; !ok {
 
 						newMembers = append(newMembers, AddMembers{newMems})
 						groupUpdated = true
@@ -234,7 +234,7 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 			if len(new.Members) < len(old.Members) {
 				//removed members
 				for _, prevMems := range allPrevGroupsMems {
-					if _, ok := allNewGroups[prevMems.Email]; !ok {
+					if _, ok := allPrevGroupsMems[prevMems.Email]; !ok {
 						delMembers = append(delMembers, DeleteMembers{prevMems})
 						groupUpdated = true
 
