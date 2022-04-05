@@ -17,6 +17,8 @@ type Changes struct {
 	DeleteRoles  []string
 	UpdateRoles  []UpdateRole
 	UpdateGroup  []UpdateGroup
+	AddGroup     []AddGroup
+	DeleteGroup  []DeleteGroup
 	// @TODO:
 	// - AddGroups
 	// - DeleteGroups
@@ -33,6 +35,8 @@ func (c Changes) Empty() bool {
 		len(c.DeleteRoles) == 0 &&
 		len(c.UpdateRoles) == 0 &&
 		len(c.UpdateGroup) == 0 &&
+		len(c.DeleteGroup) == 0 &&
+		len(c.AddGroup) == 0 &&
 		len(c.AddAdmins) == 0)
 }
 
@@ -55,10 +59,17 @@ type UpdateRole struct {
 type UpdateGroup struct {
 	ID string
 	// String describing what field changed
-	AlteredField []string // @TODO: potentially make into enum?
+	AlteredField  []string // @TODO: potentially make into enum?
+	AddMembers    []AddMembers
+	DeleteMembers []DeleteMembers
+}
 
-	AddGroup    []AddGroup
-	DeleteGroup []DeleteGroup
+type AddMembers struct {
+	Email Member
+}
+
+type DeleteMembers struct {
+	Email Member
 }
 
 type AddGroup struct {
@@ -170,12 +181,21 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 	allNewGroups := make(map[string]Group)
 	allPrevGroups := make(map[string]Group)
 
+	allNewGroupsMems := make(map[string]Member)
+	allPrevGroupsMems := make(map[string]Member)
+
 	for _, u := range c.Groups {
 		allNewGroups[u.ID] = u
-		// allNewUsers[u.Email] = userDetails{IsAdmin: true}
+		//check the group members
+		for _, m := range u.Members {
+			allNewGroupsMems[m.Email] = m
+		}
 	}
 	for _, o := range old.Groups {
 		allPrevGroups[o.ID] = o
+		for _, m := range o.Members {
+			allPrevGroupsMems[m.Email] = m
+		}
 	}
 
 	for id, new := range allNewGroups {
@@ -191,31 +211,57 @@ func (c *Config) ChangesFrom(old Config) (Changes, error) {
 				groupUpdateObj.AlteredField = append(groupUpdateObj.AlteredField, "Name")
 			}
 
+			newMembers := []AddMembers{}
+			delMembers := []DeleteMembers{}
+
+			//new members added to the group
+			if len(new.Members) > len(old.Members) {
+
+				for _, newMems := range allNewGroupsMems {
+					if _, ok := allPrevGroups[newMems.Email]; !ok {
+						newMembers = append(newMembers, AddMembers{newMems})
+					}
+
+				}
+				groupUpdateObj.AddMembers = newMembers
+			}
+			if len(new.Members) < len(old.Members) {
+				//removed members
+				for _, prevMems := range allPrevGroupsMems {
+					if _, ok := allNewGroups[prevMems.Email]; !ok {
+						delMembers = append(delMembers, DeleteMembers{prevMems})
+					}
+
+				}
+				groupUpdateObj.DeleteMembers = delMembers
+
+			}
+
+			ch.UpdateGroup = append(ch.UpdateGroup, groupUpdateObj)
+
 		} else {
 			//new group added
-			groupUpdateObj.AddGroup = append(groupUpdateObj.AddGroup, AddGroup{Name: new.Name, ID: new.ID})
+			ch.AddGroup = append(ch.AddGroup, AddGroup{Name: new.Name, ID: new.ID, Members: new.Members})
 
 		}
-
-		ch.UpdateGroup = append(ch.UpdateGroup, groupUpdateObj)
 
 	}
 
-	for id := range allPrevGroups {
-		//check to see if any of the group details have changed
-		groupUpdateObj := UpdateGroup{
-			ID:           id,
-			AlteredField: []string{},
-		}
-		//if there is a match then the group hasnt been deleted
-		if new, ok := allNewGroups[id]; !ok {
-			groupUpdateObj.DeleteGroup = append(groupUpdateObj.DeleteGroup, DeleteGroup{Name: new.Name, ID: new.ID})
+	// for id := range allPrevGroups {
+	// 	//check to see if any of the group details have changed
+	// 	groupUpdateObj := UpdateGroup{
+	// 		ID:           id,
+	// 		AlteredField: []string{},
+	// 	}
+	// 	//if there is a match then the group hasnt been deleted
+	// 	if new, ok := allNewGroups[id]; !ok {
+	// 		groupUpdateObj.DeleteGroup = append(groupUpdateObj.DeleteGroup, DeleteGroup{Name: new.Name, ID: new.ID})
 
-		}
+	// 	}
 
-		ch.UpdateGroup = append(ch.UpdateGroup, groupUpdateObj)
+	// 	ch.UpdateGroup = append(ch.UpdateGroup, groupUpdateObj)
 
-	}
+	// }
 
 	//roles
 
