@@ -67,6 +67,11 @@ func parseContents(filename string, in []byte, providers *gconfigv1alpha1.Provid
 		}
 		//validate the role has a session duration
 		isOktaRole := r.Type == gconfigv1alpha1.RoleType_ROLE_TYPE_OKTA.String()
+		if r.SessionDuration <= 0 {
+			err = fmt.Errorf("session duration required on each role")
+			err = printLintError(r, err)
+			return nil, err
+		}
 		if isOktaRole {
 			if r.Group == "" {
 				err = fmt.Errorf("group required on each role")
@@ -94,11 +99,7 @@ func parseContents(filename string, in []byte, providers *gconfigv1alpha1.Provid
 				return nil, err
 			}
 		} else {
-			if r.SessionDuration <= 0 {
-				err = fmt.Errorf("session required on each role")
-				err = printLintError(r, err)
-				return nil, err
-			}
+
 			if r.Group != "" {
 				err = fmt.Errorf("group not supported on AWS roles")
 				err = printLintError(r, err)
